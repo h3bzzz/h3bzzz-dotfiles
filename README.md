@@ -6,6 +6,8 @@ Omarchy kept on breaking on one of my desktops, I already had a hyprland configu
 
 (hyprland with lua)
 
+![Desktop](./assets/main-desktop.png)
+
 ## Components
 
 - **Lua-driven Hyprland config** (hyprland.lua with modular includes)
