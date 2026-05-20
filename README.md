@@ -1,10 +1,13 @@
 # h3bzzz's Hyprland Dotfiles
+Omarchy kept on breaking on one of my desktop, I already had a hyprland configuration I was building on my laptop that I was really beginning to get used to. I thought it was time to be able to make this available for quick setup for me at anytime. Maybe someone else can find use in it.
 
-Rose Pine themed Hyprland setup with Waybar, Rofi, Wofi, Cava, and custom screensaver.
+Hyprland setup with Waybar, Rofi, Wofi, Cava, and custom screensaver.
 
 ## Highlights
 
+
 - **Lua-driven Hyprland config** (hyprland.lua with modular includes)
+- **Neovim** - My setup with my preferred plugins (Thank you all contributors of neovim)
 - **Waybar** with centered clock flanked by Cava audio visualizer bars
 - **Rofi** app launcher (fullscreen grid) + power menu (with confirm dialog)
 - **Wofi** app launcher + power menu (alternative)
@@ -81,7 +84,9 @@ Restart Hyprland or run `hyprctl reload`.
 ├── waybar/         # Bar config, style, cava Python scripts
 ├── wofi/           # App launcher + power menu
 ├── rofi/           # App launcher (type-3) + power menu (type-4)
+├── nvim/           # neovim config files
 └── cava/           # Audio visualizer configs, themes, shaders
+
 ```
 
 ## Credits
