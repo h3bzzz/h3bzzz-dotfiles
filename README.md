@@ -21,7 +21,7 @@ Omarchy kept on breaking on one of my desktops, I already had a hyprland configu
 - **TTE screensaver** (terminal text effects in fullscreen kitty)
 - **`~/.config/hypr/current-wallpaper` symlink** tracks live wallpaper state
 
-- # **Wallpaper picker** via rofi (SUPER+W, browses `~/Pictures/wallpapers/`)
+- Wallpaper picker via rofi (SUPER+W, browses `~/Pictures/wallpapers/`)
 
 - **Hyprland** — Lua-driven config with modular includes
 - **Waybar** — Top bar with Cava audio visualizer flanking a centered clock
