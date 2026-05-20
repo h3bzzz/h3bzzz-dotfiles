@@ -36,9 +36,7 @@ Omarchy kept on breaking on one of my desktops, I already had a hyprland configu
 - **Screensaver** — TTE terminal text effects in fullscreen kitty
 - **Wallpaper picker** — Rofi-based (SUPER+W), browses `~/Pictures/wallpapers/`
 
-(super-side note but ![z.lua]<https://github.com/skywind3000/z.lua/blob/master/z.lua>
-is a lua driven file navigation for your filesystem that truly works wonders in any
-linux environment. Get it!)
+> **Note:** [z.lua](https://github.com/skywind3000/z.lua) — a Lua-driven file navigation tool that learns your habits and lets you jump anywhere with minimal keystrokes. Works wonders in any Linux environment.
 
 ## Requirements
 
