@@ -7,25 +7,17 @@ local function start_screensaver()
     hl.exec_cmd("pkill -f 'kitty --class " .. screensaver_class .. "'; " ..
         home .. "/.config/hypr/screensaver/start-screensaver.sh &")
 end
-
 local function stop_screensaver()
     if screensaver_active then
         screensaver_active = false
         hl.exec_cmd("pkill -f 'kitty --class " .. screensaver_class .. "'")
     end
 end
-
 _G.start_screensaver = start_screensaver
 _G.stop_screensaver = stop_screensaver
-
 hl.on("window.open", function(window)
-    if screensaver_active and window.class ~= screensaver_class then
-        stop_screensaver()
-    end
+    if screensaver_active and window.class ~= screensaver_class then stop_screensaver() end
 end)
-
 hl.on("window.active", function()
-    if screensaver_active then
-        stop_screensaver()
-    end
+    if screensaver_active then stop_screensaver() end
 end)

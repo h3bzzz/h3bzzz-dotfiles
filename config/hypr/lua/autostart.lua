@@ -11,7 +11,6 @@ hl.env("NIXOS_OZONE_WL", "1")
 hl.env("MOZ_ENABLE_WAYLAND", "1")
 hl.env("MOZ_DBUS_REMOTE", "1")
 
--- Autostart
 hl.on("hyprland.start", function()
 	hl.exec_cmd("waybar")
 	hl.exec_cmd("hyprpaper")
@@ -21,7 +20,6 @@ hl.on("hyprland.start", function()
 	hl.exec_cmd("wl-paste --type text --watch cliphist store")
 end)
 
--- Shutdown hook
 hl.on("hyprland.shutdown", function()
 	hl.exec_cmd("notify-send Session-ended is-that-time")
 end)

@@ -190,6 +190,6 @@
   "custom/power": {
     "format": "⏻",
     "tooltip": false,
-    "on-click": "~/.config/rofi/powermenu/type-4/powermenu.sh"
+    "on-click": "/home/h3bzzz/.config/rofi/powermenu/type-4/powermenu.sh"
   }
 }

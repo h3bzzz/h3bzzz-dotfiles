@@ -22,9 +22,13 @@ window#waybar {
   border-radius: 10px;
   color: @text;
   padding-right: 6px;
-  border: 1px solid rgba(110, 106, 134, 0.15);
+  border: 1px solid rgba(110, 106, 134, 0.15);  /* subtle border for depth */
   margin-top: -2px;
 }
+
+/* =======================
+   Workspaces
+   ======================= */
 
 #workspaces button {
   padding: 0 10px;
@@ -77,6 +81,7 @@ window#waybar {
 }
 
 #taskbar button.minimized {
+
   background-color: rgba(110, 106, 134, 0.18);
   color: @muted;
 }
@@ -85,6 +90,10 @@ window#waybar {
   background-color: rgba(235, 111, 146, 0.22);
   color: @love;
 }
+
+/* =======================
+   Window title
+   ======================= */
 
 #window {
   color: @subtle;
@@ -95,6 +104,10 @@ window#waybar {
   font-weight: 500;
   font-style: italic;
 }
+
+/* =======================
+   Shared module styling
+   ======================= */
 
 #cpu,
 #memory,
@@ -114,6 +127,7 @@ window#waybar {
   transition: background-color 0.2s ease;
 }
 
+/* Subtle hover glow on all modules */
 #cpu:hover,
 #memory:hover,
 #battery:hover,
@@ -127,12 +141,16 @@ window#waybar {
   background-color: rgba(49, 116, 143, 0.25);
 }
 
+/* =======================
+   Individual colors
+   ======================= */
+
 #cpu {
-  color: @foam;
+  color: @foam;  /* foam */
 }
 
 #memory {
-  color: @gold;
+  color: @gold;  /* gold */
 }
 
 #temperature {
@@ -145,25 +163,25 @@ window#waybar {
 }
 
 #network {
-  color: @pine;
+  color: @pine;  /* pine */
 }
 
 #network.disconnected {
-  color: @love;
+  color: @love;  /* love */
   background-color: rgba(235, 111, 146, 0.12);
 }
 
 #bluetooth {
-  color: @iris;
+  color: @iris;  /* iris */
 }
 
 #bluetooth.disabled {
-  color: @muted;
+  color: @muted;  /* muted */
   background-color: transparent;
 }
 
 #wireplumber {
-  color: @rose;
+  color: @rose;  /* rose */
 }
 
 #wireplumber.muted {
@@ -172,7 +190,7 @@ window#waybar {
 }
 
 #backlight {
-  color: @gold;
+  color: @gold;  /* gold - warm sun-like brightness */
 }
 
 #custom-system {
@@ -182,15 +200,15 @@ window#waybar {
 }
 
 #battery {
-  color: @iris;
+  color: @iris;  /* iris */
 }
 
 #battery.charging {
-  color: @pine;
+  color: @pine;  /* pine - green-ish = good */
 }
 
 #battery.warning:not(.charging) {
-  color: @gold;
+  color: @gold;  /* gold */
   animation: blink 1s linear infinite;
 }
 
@@ -204,8 +222,12 @@ window#waybar {
   to { opacity: 0.5; }
 }
 
+/* =======================
+   MPRIS (media player)
+   ======================= */
+
 #mpris {
-  color: @iris;
+  color: @iris;  /* iris */
   background-color: rgba(196, 167, 231, 0.10);
   font-style: italic;
   min-width: 180px;
@@ -214,6 +236,10 @@ window#waybar {
 #mpris.paused {
   color: @muted;
 }
+
+/* =======================
+   Cava Center Visualizer
+   ======================= */
 
 #custom-cava-left,
 #custom-cava-right {
@@ -281,6 +307,10 @@ window#waybar {
   background-color: rgba(246, 193, 119, 0.18);
 }
 
+/* =======================
+   Clock
+   ======================= */
+
 #clock {
   padding: 0 8px;
   font-weight: 700;
@@ -289,6 +319,10 @@ window#waybar {
   letter-spacing: 0.08em;
   background-color: transparent;
 }
+
+/* =======================
+   Tray
+   ======================= */
 
 #tray {
   padding: 0 12px;
@@ -304,7 +338,12 @@ window#waybar {
 #tray > .needs-attention {
   -gtk-icon-effect: highlight;
   background-color: rgba(246, 193, 119, 0.2);
+
 }
+
+/* =======================
+   Power Button
+   ======================= */
 
 #custom-power {
   padding: 0 14px;
@@ -330,6 +369,10 @@ window#waybar {
   color: @text;
 }
 
+/* =======================
+   Calendar tooltip
+   ======================= */
+
 tooltip {
   background-color: rgba(25, 23, 36, 0.95);
   border: 1px solid rgba(110, 106, 134, 0.3);
@@ -347,3 +390,4 @@ tooltip label {
   font-weight: 700;
   border-radius: 4px;
 }
+

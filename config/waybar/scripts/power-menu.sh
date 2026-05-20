@@ -32,7 +32,7 @@ chosen=$(echo "$options" | wofi \
 case "$chosen" in
     *Shutdown)
         if hyprshutdown --help >/dev/null 2>&1; then
-            hyprshutdown -t 'Shutting down...See ya!' --post-cmd 'shutdown -P 0'
+            hyprshutdown -t 'Shutting down...See ya h3bzzz' --post-cmd 'shutdown -P 0'
         else
             systemctl poweroff
         fi
@@ -54,3 +54,4 @@ case "$chosen" in
         hyprctl dispatch exit
         ;;
 esac
+
