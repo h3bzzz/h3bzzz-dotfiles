@@ -102,6 +102,28 @@ if [[ -f "$DEFAULT_WALL" ]]; then
 	echo "    Set default wallpaper symlink"
 fi
 
+# Auto-detect monitors and configure settings.lua
+SETTINGS_LUA="$CONFIG_DIR/hypr/lua/settings.lua"
+if command -v hyprctl &>/dev/null && MONITORS_JSON=$(hyprctl -j monitors 2>/dev/null) && [[ "$(echo "$MONITORS_JSON" | jq length 2>/dev/null)" -gt 0 ]]; then
+	echo "==> Detecting monitors and updating settings.lua..."
+
+	NEW_MONITOR_ENTRIES=$(echo "$MONITORS_JSON" | jq -r '.[] |
+		"hl.monitor({\n\toutput = \"\(.name)\",\n\tmode = \"\(.width)x\(.height)@\(.refreshRate | round)\",\n\tposition = \"\(.x)x\(.y)\",\n\tscale = \(.scale),\n}"')
+
+	sed -i '/^hl\.monitor({/,/^})/d' "$SETTINGS_LUA"
+
+	{
+		echo "$NEW_MONITOR_ENTRIES"
+		echo ""
+		cat "$SETTINGS_LUA"
+	} > "${SETTINGS_LUA}.tmp" && mv "${SETTINGS_LUA}.tmp" "$SETTINGS_LUA"
+
+	echo "    settings.lua updated with detected monitors."
+else
+	echo "==> hyprctl not available (Hyprland not running); keeping default placeholders."
+	echo "    After starting Hyprland, edit $SETTINGS_LUA with: hyprctl monitors"
+fi
+
 echo ""
 echo "==> Done! Restart Hyprland (or hyprctl reload) to apply."
 echo "    Run nvim to trigger LazyVim plugin install."
