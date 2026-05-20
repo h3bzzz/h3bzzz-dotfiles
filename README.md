@@ -2,7 +2,7 @@
 
 Omarchy kept on breaking on one of my desktops, I already had a hyprland configuration I was building on my laptop that I was really beginning to get used to. I thought it was time to be able to make this available for quick setup for me at anytime. Maybe someone else can find use in it.
 
-# Hyprland setup with Waybar, Rofi, Wofi, Cava, and custom screensaver
+# Hyprland setup with Waybar, Wofi, Cava, and custom screensaver
 
 (hyprland with lua)
 
