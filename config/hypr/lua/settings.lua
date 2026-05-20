@@ -1,12 +1,12 @@
 hl.monitor({
-	output = "desc:LG Electronics LG HDR QHD 307NTJJ1E036",
+	output = --"INSERT YOUR MONITOR INFO HERE, use hyprctl monitors",
 	mode = "1920x1080@60",
 	position = "0x0",
 	scale = 1,
 })
 
 hl.monitor({
-	output = "desc:ViewSonic Corporation VX2252 Series TVR1040A0447",
+	output = --" 'hyprctl monitors' is the way",
 	mode = "1920x1080@60",
 	position = "2560x0",
 	scale = 1,
