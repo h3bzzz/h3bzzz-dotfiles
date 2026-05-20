@@ -9,14 +9,13 @@ echo "==> h3bzzz's Hyprland Dotfiles Installer"
 echo "    Installing to: $CONFIG_DIR"
 echo ""
 
-# ── Helper: symlink or copy a file/directory ──────────────────────
 link_or_copy() {
 	local src="$1"
 	local dst="$2"
 
 	if [[ -e "$dst" || -L "$dst" ]]; then
 		if [[ "$(readlink -f "$src")" == "$(readlink -f "$dst")" ]]; then
-			return 0  # already correct
+			return 0
 		fi
 		echo "    Backing up $dst -> ${dst}.bak"
 		mv "$dst" "${dst}.bak"
@@ -26,7 +25,6 @@ link_or_copy() {
 	ln -sfn "$src" "$dst"
 }
 
-# ── Detect distro / package manager ───────────────────────────────
 install_pkg() {
 	if command -v pacman &>/dev/null; then
 		sudo pacman -S --needed --noconfirm "$@"
@@ -41,7 +39,6 @@ install_pkg() {
 	fi
 }
 
-# ── Parse flags ───────────────────────────────────────────────────
 INSTALL_DEPS=false
 for arg in "$@"; do
 	case "$arg" in
@@ -54,11 +51,8 @@ for arg in "$@"; do
 	esac
 done
 
-# ── Install dependencies ─────────────────────────────────────────
 if $INSTALL_DEPS; then
 	echo "==> Installing dependencies..."
-
-	# Core
 	install_pkg hyprland hyprpaper hyprlock hypridle hyprlauncher
 	install_pkg waybar wofi rofi-wayland
 	install_pkg kitty ghostty
@@ -71,45 +65,37 @@ if $INSTALL_DEPS; then
 	install_pkg papirus-icon-theme
 	install_pkg ttf-jetbrains-mono-nerd
 
-	# Optional: AUR helpers or external tools
 	if command -v yay &>/dev/null; then
 		yay -S --needed --noconfirm hyprshutdown 2>/dev/null || true
 	elif command -v paru &>/dev/null; then
 		paru -S --needed --noconfirm hyprshutdown 2>/dev/null || true
 	fi
 
-	# tte (terminal text effects) for screensaver
 	if ! command -v tte &>/dev/null && [[ ! -f "$HOME/.local/bin/tte" ]]; then
-		echo "    tte not found. Install manually from: https://github.com/nicoverbruggen/tte"
+		echo "    tte not found. Install from: https://github.com/nicoverbruggen/tte"
 	fi
 
 	echo ""
 fi
 
-# ── Deploy configurations ─────────────────────────────────────────
 echo "==> Deploying configurations..."
 
-# Hyprland
 link_or_copy "$DOTFILES_DIR/config/hypr" "$CONFIG_DIR/hypr"
-
-# Waybar
 link_or_copy "$DOTFILES_DIR/config/waybar" "$CONFIG_DIR/waybar"
-
-# Wofi
 link_or_copy "$DOTFILES_DIR/config/wofi" "$CONFIG_DIR/wofi"
-
-# Rofi
 link_or_copy "$DOTFILES_DIR/config/rofi" "$CONFIG_DIR/rofi"
-
-# Cava
 link_or_copy "$DOTFILES_DIR/config/cava" "$CONFIG_DIR/cava"
+link_or_copy "$DOTFILES_DIR/config/nvim" "$CONFIG_DIR/nvim"
+link_or_copy "$DOTFILES_DIR/config/kitty" "$CONFIG_DIR/kitty"
 
-# Wallpapers
+# Zsh (sourced from $HOME, not .config)
+link_or_copy "$DOTFILES_DIR/config/zsh/.zshrc" "$HOME/.zshrc"
+link_or_copy "$DOTFILES_DIR/config/zsh/.p10k.zsh" "$HOME/.p10k.zsh"
+
 mkdir -p "$PICS_DIR/wallpapers"
 echo "    Copying wallpapers -> $PICS_DIR/wallpapers/"
 cp -n "$DOTFILES_DIR"/wallpapers/* "$PICS_DIR/wallpapers/" 2>/dev/null || true
 
-# Create current-wallpaper symlink to default wallpaper
 DEFAULT_WALL="$PICS_DIR/wallpapers/a_skeleton_standing_on_a_pile_of_skulls.png"
 if [[ -f "$DEFAULT_WALL" ]]; then
 	ln -sfn "$DEFAULT_WALL" "$CONFIG_DIR/hypr/current-wallpaper"
@@ -117,6 +103,5 @@ if [[ -f "$DEFAULT_WALL" ]]; then
 fi
 
 echo ""
-echo "==> Done! Restart Hyprland or run 'hyprctl reload' to apply."
-echo "    If things don't look right, verify the symlinks in $CONFIG_DIR"
-echo "    and ensure all dependencies are installed."
+echo "==> Done! Restart Hyprland (or hyprctl reload) to apply."
+echo "    Run nvim to trigger LazyVim plugin install."
