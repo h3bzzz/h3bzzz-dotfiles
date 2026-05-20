@@ -1,0 +1,127 @@
+* {
+    font-family: "JetBrainsMono Nerd Font", "Inter", monospace;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+window {
+    margin: 0px;
+    border: 2px solid #eb6f92;
+    border-radius: 12px;
+    background-color: #191724;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+#input {
+    margin: 12px;
+    padding: 12px 16px;
+    border: 2px solid #26233a;
+    border-radius: 8px;
+    color: #e0def4;
+    background-color: #1f1d2e;
+    font-size: 15px;
+}
+
+#input:focus {
+    border-color: #eb6f92;
+    background-color: #26233a;
+}
+
+#inner-box {
+    margin: 8px;
+    border: none;
+    background-color: transparent;
+}
+
+#outer-box {
+    margin: 0px;
+    border: none;
+    background-color: transparent;
+}
+
+#scroll {
+    margin: 0px;
+    border: none;
+}
+
+#text {
+    margin: 2px 0px;
+    padding: 0px;
+    color: #e0def4;
+}
+
+#entry {
+    padding: 16px 18px;
+    margin: 6px 10px;
+    border-radius: 8px;
+    background-color: transparent;
+    transition: all 0.15s ease-in-out;
+    min-height: 40px;
+}
+
+#entry:hover {
+    background-color: rgba(49, 116, 143, 0.25);
+    cursor: pointer;
+}
+
+#entry:selected {
+    background: linear-gradient(135deg, rgba(235, 111, 146, 0.35), rgba(49, 116, 143, 0.35));
+    color: #e0def4;
+    font-weight: 700;
+    border: 1px solid rgba(235, 111, 146, 0.4);
+}
+
+#entry:selected:hover {
+    background: linear-gradient(135deg, rgba(235, 111, 146, 0.45), rgba(49, 116, 143, 0.45));
+}
+
+/* Individual option colors with better contrast */
+#entry:nth-child(1):selected {
+    background: linear-gradient(135deg, rgba(235, 111, 146, 0.45), rgba(235, 111, 146, 0.25));
+    color: #eb6f92;
+    border-color: rgba(235, 111, 146, 0.6);
+}
+
+#entry:nth-child(2):selected {
+    background: linear-gradient(135deg, rgba(246, 193, 119, 0.45), rgba(246, 193, 119, 0.25));
+    color: #f6c177;
+    border-color: rgba(246, 193, 119, 0.6);
+}
+
+#entry:nth-child(3):selected {
+    background: linear-gradient(135deg, rgba(156, 207, 216, 0.45), rgba(156, 207, 216, 0.25));
+    color: #9ccfd8;
+    border-color: rgba(156, 207, 216, 0.6);
+}
+
+#entry:nth-child(4):selected {
+    background: linear-gradient(135deg, rgba(196, 167, 231, 0.45), rgba(196, 167, 231, 0.25));
+    color: #c4a7e7;
+    border-color: rgba(196, 167, 231, 0.6);
+}
+
+#entry:nth-child(5):selected {
+    background: linear-gradient(135deg, rgba(235, 188, 186, 0.45), rgba(235, 188, 186, 0.25));
+    color: #ebbcba;
+    border-color: rgba(235, 188, 186, 0.6);
+}
+
+#entry:nth-child(1):hover {
+    background-color: rgba(235, 111, 146, 0.2);
+}
+
+#entry:nth-child(2):hover {
+    background-color: rgba(246, 193, 119, 0.2);
+}
+
+#entry:nth-child(3):hover {
+    background-color: rgba(156, 207, 216, 0.2);
+}
+
+#entry:nth-child(4):hover {
+    background-color: rgba(196, 167, 231, 0.2);
+}
+
+#entry:nth-child(5):hover {
+    background-color: rgba(235, 188, 186, 0.2);
+}

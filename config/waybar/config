@@ -1,0 +1,30 @@
+{
+	"include": [
+		"~/.config/waybar/modules.jsonc"
+	],
+	"layer": "top",
+	"position": "top",
+	"height": 34,
+	"spacing": 8,
+	"margin-left": 10,
+	"margin-right": 10,
+	"modules-left": [
+		"hyprland/workspaces",
+		"wlr/taskbar",
+		"hyprland/window"
+	],
+	"modules-center": [
+		"custom/cava-left",
+		"clock",
+		"custom/cava-right"
+	],
+	"modules-right": [
+		"group/hardware",
+		"wireplumber",
+		"bluetooth",
+		"network",
+		"custom/notification",
+		"tray",
+		"custom/power"
+	]
+}

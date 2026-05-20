@@ -1,0 +1,195 @@
+{
+  "hyprland/workspaces": {
+    "format": "{icon}",
+    "on-click": "activate",
+    "format-icons": {
+      "1": "󰲠",
+      "2": "󰲢",
+      "3": "󰲤",
+      "4": "󰲦",
+      "5": "󰲨"
+    },
+    "persistent-workspaces": {
+      "*": 5
+    }
+  },
+
+  "wlr/taskbar": {
+    "format": "{icon}",
+    "icon-size": 16,
+    "tooltip-format": "{title}",
+    "on-click": "activate",
+    "on-click-middle": "close",
+    "ignore-list": [
+      "rofi",
+      "wofi",
+      "wlogout"
+    ]
+  },
+
+  "hyprland/window": {
+    "format": "{}",
+    "max-length": 48,
+    "separate-outputs": true
+  },
+
+  "group/hardware": {
+    "orientation": "inherit",
+    "drawer": {
+      "transition-duration": 250,
+      "children-class": "hardware-drawer",
+      "transition-left-to-right": false
+    },
+    "modules": [
+      "cpu",
+      "temperature",
+      "memory"
+    ]
+  },
+
+  "clock": {
+    "interval": 1,
+    "format": "{:%H:%M:%S}",
+    "format-alt": "{:%A, %B %d, %Y}",
+    "tooltip-format": "<tt><small>{calendar}</small></tt>",
+    "calendar": {
+      "mode": "month",
+      "mode-mon-col": 3,
+      "weeks-pos": "right",
+      "on-scroll": 1,
+      "format": {
+        "months": "<span color='#e0def4'><b>{}</b></span>",
+        "days": "<span color='#908caa'><b>{}</b></span>",
+        "weeks": "<span color='#6e6a86'><b>W{}</b></span>",
+        "weekdays": "<span color='#c4a7e7'><b>{}</b></span>",
+        "today": "<span color='#f6c177'><b><u>{}</u></b></span>"
+      }
+    }
+  },
+
+  "mpris": {
+    "player": "playerctld",
+    "interval": 1,
+    "format": "{player_icon} {dynamic}",
+    "format-paused": "{status_icon} <i>{dynamic}</i>",
+    "format-stopped": "",
+    "max-length": 40,
+    "tooltip-format": "{player} - {status}\n{dynamic}",
+    "player-icons": {
+      "default": "󰎆",
+      "firefox": "󰈹",
+      "mpv": "󰐹"
+    },
+    "status-icons": {
+      "paused": "󰏤",
+      "playing": "󰐊"
+    },
+    "on-click": "playerctl play-pause",
+    "on-click-right": "playerctl next"
+  },
+
+    "custom/cava-left": {
+    "exec-if": "command -v cava >/dev/null 2>&1 && command -v python3 >/dev/null 2>&1",
+    "exec": "python3 ~/.config/waybar/scripts/cava-waybar-center.py left",
+    "return-type": "json",
+    "format": "{text}",
+    "escape": false,
+    "tooltip": false,
+    "on-click": "pavucontrol"
+  },
+
+  "custom/cava-right": {
+    "exec-if": "command -v cava >/dev/null 2>&1 && command -v python3 >/dev/null 2>&1",
+    "exec": "python3 ~/.config/waybar/scripts/cava-waybar-center.py right",
+    "return-type": "json",
+    "format": "{text}",
+    "escape": false,
+    "tooltip": false,
+    "on-click": "pavucontrol"
+  },
+
+  "custom/cava-wide": {
+    "exec-if": "command -v cava >/dev/null 2>&1 && command -v python3 >/dev/null 2>&1",
+    "exec": "python3 ~/.config/waybar/scripts/cava-waybar-wide.py",
+    "return-type": "json",
+    "format": "{text}",
+    "escape": false,
+    "tooltip": false
+  },
+
+  "cpu": {
+    "interval": 3,
+    "format": "󰍛  {usage}%"
+  },
+
+  "memory": {
+    "interval": 5,
+    "format": "󰘚  {percentage}%",
+    "tooltip-format": "RAM: {used:0.1f}G / {total:0.1f}G\nSwap: {swapUsed:0.1f}G / {swapTotal:0.1f}G"
+  },
+
+  "temperature": {
+    "thermal-zone": 0,
+    "critical-threshold": 80,
+    "format": "󰔏  {temperatureC}°C",
+    "format-critical": "󰸁  {temperatureC}°C",
+    "tooltip": true
+  },
+
+  "network": {
+    "format-wifi": "󰤨  {signalStrength}%",
+    "format-ethernet": "󰈀  LAN",
+    "format-disconnected": "󰖪  Offline",
+    "tooltip-format": "{ifname}: {ipaddr}/{cidr}\n{essid}",
+    "on-click": "nm-connection-editor"
+  },
+
+  "bluetooth": {
+    "format": "󰂯",
+    "format-disabled": "󰂲",
+    "format-connected": "󰂱 {num_connections}",
+    "tooltip-format": "Bluetooth",
+    "on-click": "blueman-manager"
+  },
+
+  "wireplumber": {
+    "format": "󰕾  {volume}%",
+    "format-muted": "󰖁  Muted",
+    "on-click": "pavucontrol",
+    "on-click-right": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
+    "scroll-step": 5,
+    "max-volume": 150
+  },
+
+  "tray": {
+    "icon-size": 18,
+    "spacing": 10
+  },
+
+  "custom/notification": {
+    "tooltip": false,
+    "format": "{icon}",
+    "format-icons": {
+      "notification": "<span foreground='#eb6f92'><sup>•</sup></span>",
+      "none": "",
+      "dnd-notification": "󰂛<span foreground='#f6c177'><sup>•</sup></span>",
+      "dnd-none": "󰂛",
+      "inhibited-notification": "<span foreground='#f6c177'><sup>•</sup></span>",
+      "inhibited-none": "",
+      "dnd-inhibited-notification": "󰂛<span foreground='#ebbcba'><sup>•</sup></span>",
+      "dnd-inhibited-none": "󰂛"
+    },
+    "return-type": "json",
+    "exec-if": "which swaync-client",
+    "exec": "swaync-client -swb",
+    "on-click": "swaync-client -t -sw",
+    "on-click-right": "swaync-client -d -sw",
+    "escape": true
+  },
+
+  "custom/power": {
+    "format": "⏻",
+    "tooltip": false,
+    "on-click": "~/.config/rofi/powermenu/type-4/powermenu.sh"
+  }
+}

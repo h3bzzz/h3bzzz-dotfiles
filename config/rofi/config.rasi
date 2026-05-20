@@ -1,0 +1,17 @@
+configuration {
+	modi: "combi,drun,run,window,filebrowser";
+	combi-modi: "drun,run";
+	show-icons: true;
+	icon-theme: "Papirus";
+	terminal: "ghostty";
+	drun-display-format: "{name}";
+	display-combi: "All Apps";
+	display-drun: "Apps";
+	display-run: "Run";
+	display-window: "Windows";
+	display-filebrowser: "Files";
+	font: "JetBrainsMono Nerd Font 12";
+	sort: true;
+	sorting-method: "fzf";
+	click-to-exit: true;
+}

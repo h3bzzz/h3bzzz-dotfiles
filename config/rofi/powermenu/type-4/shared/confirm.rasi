@@ -1,0 +1,78 @@
+@import "colors.rasi"
+@import "fonts.rasi"
+
+
+* {
+	background-color: transparent;
+	text-color: @foreground;
+}
+
+
+window {
+	transparency: "real";
+	location: center;
+	anchor: center;
+	width: 360px;
+	border: 1px;
+	border-color: rgba(196, 167, 231, 0.25);
+	border-radius: 18px;
+	background-color: @panel;
+}
+
+
+mainbox {
+	spacing: 18px;
+	padding: 20px;
+	children: [ "inputbar", "message", "listview" ];
+}
+
+
+inputbar {
+	children: [ "prompt" ];
+}
+
+
+prompt {
+	font: @prompt-font;
+	text-color: @iris;
+}
+
+
+message {
+	background-color: rgba(38, 35, 58, 0.9);
+	border-radius: 12px;
+	padding: 10px 12px;
+}
+
+
+textbox {
+	font: @message-font;
+	text-color: @subtle;
+	horizontal-align: 0.5;
+}
+
+
+listview {
+	lines: 2;
+	columns: 1;
+	spacing: 10px;
+	scrollbar: false;
+}
+
+
+element {
+	padding: 12px 14px;
+	border-radius: 12px;
+	background-color: rgba(38, 35, 58, 0.92);
+}
+
+
+element selected.normal {
+	background-color: rgba(49, 116, 143, 0.24);
+}
+
+
+element-text {
+	font: @message-font;
+	horizontal-align: 0.5;
+}

@@ -1,0 +1,7 @@
+* {
+	fonts: "JetBrainsMono Nerd Font 12";
+	prompt-font: "JetBrainsMono Nerd Font Bold 15";
+	entry-font: "JetBrainsMono Nerd Font 13";
+	element-font: "JetBrainsMono Nerd Font 12";
+	icon-font: "JetBrainsMono Nerd Font 30";
+}

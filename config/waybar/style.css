@@ -1,0 +1,349 @@
+@define-color base #191724;
+@define-color surface #1f1d2e;
+@define-color overlay #26233a;
+@define-color muted #6e6a86;
+@define-color subtle #908caa;
+@define-color text #e0def4;
+@define-color love #eb6f92;
+@define-color gold #f6c177;
+@define-color rose #ebbcba;
+@define-color pine #31748f;
+@define-color foam #9ccfd8;
+@define-color iris #c4a7e7;
+
+* {
+  font-family: "JetBrainsMono Nerd Font";
+  font-size: 12px;
+  font-weight: 600;
+}
+
+window#waybar {
+  background-color: rgba(25, 23, 36, 0.88);
+  border-radius: 10px;
+  color: @text;
+  padding-right: 6px;
+  border: 1px solid rgba(110, 106, 134, 0.15);
+  margin-top: -2px;
+}
+
+#workspaces button {
+  padding: 0 10px;
+  margin: 0 2px;
+  border-radius: 8px;
+  background-color: rgba(49, 116, 143, 0.10);
+  color: @muted;
+  transition: all 0.2s ease;
+}
+
+#workspaces button.active {
+  background-color: rgba(49, 116, 143, 0.35);
+  color: @text;
+  font-weight: 700;
+}
+
+#workspaces button:hover {
+  background-color: rgba(196, 167, 231, 0.18);
+  color: @iris;
+}
+
+#workspaces button.urgent {
+  background-color: rgba(235, 111, 146, 0.25);
+  color: @love;
+}
+
+#taskbar {
+  margin: 0 4px;
+}
+
+#taskbar button {
+  min-width: 28px;
+  padding: 0 10px;
+  margin: 0 2px;
+  border-radius: 8px;
+  background-color: rgba(110, 106, 134, 0.10);
+  color: @subtle;
+  transition: all 0.2s ease;
+}
+
+#taskbar button:hover {
+  background-color: rgba(196, 167, 231, 0.18);
+  color: @iris;
+  box-shadow: none;
+}
+
+#taskbar button.active {
+  background-color: rgba(49, 116, 143, 0.30);
+  color: @text;
+}
+
+#taskbar button.minimized {
+  background-color: rgba(110, 106, 134, 0.18);
+  color: @muted;
+}
+
+#taskbar button.urgent {
+  background-color: rgba(235, 111, 146, 0.22);
+  color: @love;
+}
+
+#window {
+  color: @subtle;
+  padding: 0 10px;
+  margin: 0 2px;
+  border-radius: 8px;
+  background-color: rgba(110, 106, 134, 0.10);
+  font-weight: 500;
+  font-style: italic;
+}
+
+#cpu,
+#memory,
+#battery,
+#network,
+#bluetooth,
+#wireplumber,
+#temperature,
+#backlight,
+#mpris,
+#custom-system,
+#custom-notification {
+  padding: 0 12px;
+  margin: 0 2px;
+  border-radius: 8px;
+  background-color: rgba(49, 116, 143, 0.12);
+  transition: background-color 0.2s ease;
+}
+
+#cpu:hover,
+#memory:hover,
+#battery:hover,
+#network:hover,
+#bluetooth:hover,
+#wireplumber:hover,
+#temperature:hover,
+#backlight:hover,
+#mpris:hover,
+#custom-notification:hover {
+  background-color: rgba(49, 116, 143, 0.25);
+}
+
+#cpu {
+  color: @foam;
+}
+
+#memory {
+  color: @gold;
+}
+
+#temperature {
+  color: @rose;
+}
+
+#temperature.critical {
+  color: @love;
+  background-color: rgba(235, 111, 146, 0.16);
+}
+
+#network {
+  color: @pine;
+}
+
+#network.disconnected {
+  color: @love;
+  background-color: rgba(235, 111, 146, 0.12);
+}
+
+#bluetooth {
+  color: @iris;
+}
+
+#bluetooth.disabled {
+  color: @muted;
+  background-color: transparent;
+}
+
+#wireplumber {
+  color: @rose;
+}
+
+#wireplumber.muted {
+  color: @muted;
+  background-color: transparent;
+}
+
+#backlight {
+  color: @gold;
+}
+
+#custom-system {
+  color: @iris;
+  font-size: 14px;
+  padding: 0 11px;
+}
+
+#battery {
+  color: @iris;
+}
+
+#battery.charging {
+  color: @pine;
+}
+
+#battery.warning:not(.charging) {
+  color: @gold;
+  animation: blink 1s linear infinite;
+}
+
+#battery.critical:not(.charging) {
+  background-color: rgba(235, 111, 146, 0.3);
+  color: @love;
+  animation: blink 0.5s linear infinite;
+}
+
+@keyframes blink {
+  to { opacity: 0.5; }
+}
+
+#mpris {
+  color: @iris;
+  background-color: rgba(196, 167, 231, 0.10);
+  font-style: italic;
+  min-width: 180px;
+}
+
+#mpris.paused {
+  color: @muted;
+}
+
+#custom-cava-left,
+#custom-cava-right {
+  font-size: 14px;
+  padding: 0;
+  margin: 0;
+  background-color: transparent;
+  letter-spacing: 1.5px;
+  transition: opacity 0.3s ease;
+}
+
+#custom-cava-left {
+  padding-right: 6px;
+}
+
+#custom-cava-right {
+  padding-left: 6px;
+}
+
+#custom-cava-wide {
+  font-size: 12px;
+  padding: 0;
+  margin: 0;
+  background-color: transparent;
+  letter-spacing: 1px;
+  transition: opacity 0.3s ease;
+}
+
+#custom-cava-left.idle,
+#custom-cava-right.idle,
+#custom-cava-wide.idle {
+  opacity: 0.35;
+}
+
+#custom-cava-left.active,
+#custom-cava-right.active,
+#custom-cava-wide.active {
+  opacity: 1;
+}
+
+#custom-notification {
+  color: @gold;
+  padding: 0 10px;
+}
+
+#custom-notification.none {
+  color: @subtle;
+  background-color: rgba(110, 106, 134, 0.12);
+}
+
+#custom-notification.notification,
+#custom-notification.inhibited-notification {
+  color: @love;
+}
+
+#custom-notification.dnd-none,
+#custom-notification.dnd-inhibited-none {
+  color: @gold;
+  background-color: rgba(246, 193, 119, 0.12);
+}
+
+#custom-notification.dnd-notification,
+#custom-notification.dnd-inhibited-notification {
+  color: @gold;
+  background-color: rgba(246, 193, 119, 0.18);
+}
+
+#clock {
+  padding: 0 8px;
+  font-weight: 700;
+  font-size: 16px;
+  color: @text;
+  letter-spacing: 0.08em;
+  background-color: transparent;
+}
+
+#tray {
+  padding: 0 12px;
+  margin: 0 2px;
+  border-radius: 8px;
+  background-color: rgba(110, 106, 134, 0.12);
+}
+
+#tray > .passive {
+  -gtk-icon-effect: dim;
+}
+
+#tray > .needs-attention {
+  -gtk-icon-effect: highlight;
+  background-color: rgba(246, 193, 119, 0.2);
+}
+
+#custom-power {
+  padding: 0 14px;
+  margin-left: 4px;
+  margin-right: 6px;
+  border-radius: 10px;
+  background: linear-gradient(
+    135deg,
+    rgba(235, 111, 146, 0.2),
+    rgba(49, 116, 143, 0.2)
+  );
+  color: @love;
+  font-size: 15px;
+  transition: all 0.2s ease;
+}
+
+#custom-power:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(235, 111, 146, 0.45),
+    rgba(49, 116, 143, 0.45)
+  );
+  color: @text;
+}
+
+tooltip {
+  background-color: rgba(25, 23, 36, 0.95);
+  border: 1px solid rgba(110, 106, 134, 0.3);
+  border-radius: 8px;
+  color: @text;
+}
+
+tooltip label {
+  color: @text;
+}
+
+#clock .calendar-day.today {
+  background-color: rgba(246, 193, 119, 0.35);
+  color: @gold;
+  font-weight: 700;
+  border-radius: 4px;
+}
