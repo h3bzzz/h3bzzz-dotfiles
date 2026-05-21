@@ -10,7 +10,7 @@ hl.env("CLUTTER_BACKEND", "wayland")
 hl.env("NIXOS_OZONE_WL", "1")
 hl.env("MOZ_ENABLE_WAYLAND", "1")
 hl.env("MOZ_DBUS_REMOTE", "1")
-hl.env("WLR_DRM_DEVICES", "/dev/dri/by-path/pci-0000:00:02.0-card:/dev/dri/by-path/pci-0000:01:00.0-card")
+--hl.env("AQ_DRM_DEVICES", "/dev/dri/by-path/pci-0000:00:02.0-card:/dev/dri/by-path/pci-0000:01:00.0-card")
 
 
 -- Autostart
@@ -19,7 +19,7 @@ hl.on("hyprland.start", function()
 	hl.exec_cmd("hyprpaper")
 	hl.exec_cmd(home .. "/.config/hypr/scripts/set-wallpaper-autostart.sh")
 	hl.exec_cmd("hypridle")
-	hl.exec_cmd("kitty")
+	hl.exec_cmd("ghostty")
 	hl.exec_cmd("wl-paste --type text --watch cliphist store")
 end)
 

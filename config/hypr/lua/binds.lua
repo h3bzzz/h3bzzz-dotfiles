@@ -1,4 +1,4 @@
-local terminal      = "kitty"
+local terminal      = "/usr/bin/ghostty"
 local fileManager   = "dolphin"
 local menu          = "hyprlauncher"
 local mainMod       = "SUPER"

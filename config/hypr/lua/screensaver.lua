@@ -4,14 +4,14 @@ local home = os.getenv("HOME") or "/home/h3bzzz"
 
 local function start_screensaver()
     screensaver_active = true
-    hl.exec_cmd("pkill -f 'kitty --class " .. screensaver_class .. "'; " ..
+    hl.exec_cmd("pkill -f 'ghostty --class " .. screensaver_class .. "'; " ..
         home .. "/.config/hypr/screensaver/start-screensaver.sh &")
 end
 
 local function stop_screensaver()
     if screensaver_active then
         screensaver_active = false
-        hl.exec_cmd("pkill -f 'kitty --class " .. screensaver_class .. "'")
+        hl.exec_cmd("pkill -f 'ghostty --class " .. screensaver_class .. "'")
     end
 end
 

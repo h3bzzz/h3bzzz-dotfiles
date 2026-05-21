@@ -55,7 +55,7 @@ if $INSTALL_DEPS; then
 	echo "==> Installing dependencies..."
 	install_pkg hyprland hyprpaper hyprlock hypridle hyprlauncher
 	install_pkg waybar wofi rofi-wayland
-	install_pkg kitty ghostty
+	install_pkg ghostty
 	install_pkg cava
 	install_pkg swaync
 	install_pkg cliphist wl-clipboard
@@ -86,7 +86,7 @@ link_or_copy "$DOTFILES_DIR/config/wofi" "$CONFIG_DIR/wofi"
 link_or_copy "$DOTFILES_DIR/config/rofi" "$CONFIG_DIR/rofi"
 link_or_copy "$DOTFILES_DIR/config/cava" "$CONFIG_DIR/cava"
 link_or_copy "$DOTFILES_DIR/config/nvim" "$CONFIG_DIR/nvim"
-link_or_copy "$DOTFILES_DIR/config/kitty" "$CONFIG_DIR/kitty"
+link_or_copy "$DOTFILES_DIR/config/ghostty" "$CONFIG_DIR/ghostty"
 
 # Zsh (sourced from $HOME, not .config)
 link_or_copy "$DOTFILES_DIR/config/zsh/.zshrc" "$HOME/.zshrc"

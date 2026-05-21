@@ -66,10 +66,3 @@ hl.window_rule({
 	match = { class = "^(com\\.mitchellh\\.ghostty)$" },
 	opacity = "0.96 override 0.88 override",
 })
-
--- Kitty Transparency (matches terminal opacity for consistency)
-hl.window_rule({
-	name = "kitty-opacity",
-	match = { class = "^(kitty)$" },
-	opacity = "0.96 override 0.88 override",
-})

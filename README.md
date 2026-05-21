@@ -18,7 +18,7 @@ Omarchy kept on breaking on one of my desktops, I already had a hyprland configu
 - **Wofi** app launcher + power menu (alternative)
 - **Hyprlock** lockscreen with clock, date, caps warning
 - **Hypridle** timed idle → screensaver → lock → DPMS → suspend
-- **TTE screensaver** (terminal text effects in fullscreen kitty)
+- **TTE screensaver** (terminal text effects in fullscreen ghostty)
 - **`~/.config/hypr/current-wallpaper` symlink** tracks live wallpaper state
 
 - Wallpaper picker via rofi (SUPER+W, browses `~/Pictures/wallpapers/`)
@@ -27,13 +27,13 @@ Omarchy kept on breaking on one of my desktops, I already had a hyprland configu
 - **Waybar** — Top bar with Cava audio visualizer flanking a centered clock
 - **Rofi** — Fullscreen grid launcher (type-3) + power menu with confirm dialog (type-4)
 - **Wofi** — Alternative app launcher + power menu
-- **Kitty** — Terminal emulator (Rose Pine Moon theme, JetBrainsMono Nerd Font, 88% opacity)
+- **Ghostty** — Terminal emulator (Rose Pine Moon theme, JetBrainsMono Nerd Font, 88% opacity)
 - **Zsh** — Oh My Zsh + Powerlevel10k prompt + zsh-autosuggestions/syntax-highlighting/completions
 - **Hyprlock** — Lockscreen with clock, date, caps-lock warning
 - **Hypridle** — Timed idle → screensaver → lock → DPMS → suspend
 - **Neovim** — LazyVim-based config with LSP, DAP, fuzzy finding, dashboard
 - **Cava** — Audio visualizer with 3 bar configs + GLSL shaders
-- **Screensaver** — TTE terminal text effects in fullscreen kitty
+- **Screensaver** — TTE terminal text effects in fullscreen ghostty
 - **Wallpaper picker** — Rofi-based (SUPER+W), browses `~/Pictures/wallpapers/`
 
 > **Note:** [z.lua](https://github.com/skywind3000/z.lua) — a Lua-driven file navigation tool that learns your habits and lets you jump anywhere with minimal keystrokes. Works wonders in any Linux environment.
@@ -48,10 +48,9 @@ Omarchy kept on breaking on one of my desktops, I already had a hyprland configu
 | cava                                                          | Audio visualizer                                                        |
 | swaync                                                        | Notifications                                                           |
 | cliphist, wl-clipboard                                        | Clipboard manager                                                       |
-| kitty                                                         | Default terminal                                                        |
+| ghostty                                                       | Terminal emulator                                                       |
 | zsh + oh-my-zsh + powerlevel10k                               | Shell + prompt                                                          |
 | zsh-autosuggestions, zsh-syntax-highlighting, zsh-completions | Zsh plugins                                                             |
-| ghostty                                                       | Secondary terminal                                                      |
 | ttf-jetbrains-mono-nerd                                       | UI font                                                                 |
 | papirus-icon-theme                                            | Icons                                                                   |
 | jq, python                                                    | Script dependencies                                                     |
@@ -110,7 +109,7 @@ Restart Hyprland or `hyprctl reload`. Launch nvim once to trigger LazyVim instal
 ├── wofi/       # App launcher + power menu
 ├── rofi/       # Launcher (type-3) + powermenu (type-4)
 ├── cava/       # Audio visualizer configs, themes, shaders
-├── kitty/      # Terminal emulator (Rose Pine Moon)
+├── ghostty/    # Terminal emulator (Rose Pine Moon)
 ├── nvim/       # LazyVim-based Neovim config
 └── zsh/        # .zshrc + .p10k.zsh (symlinked to $HOME)
 ```
