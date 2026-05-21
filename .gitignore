@@ -6,4 +6,7 @@ Thumbs.db
 *.swp
 *.swo
 
+# Hyprland dynamic state (regenerated on wallpaper change)
+config/hypr/current-wallpaper
+
 

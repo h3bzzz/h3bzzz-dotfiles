@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 
 import json
-import os
 import signal
 import subprocess
 import sys
 from typing import cast, TextIO
 
 SIDE = sys.argv[1] if len(sys.argv) > 1 else "right"
-CONFIG = os.path.expanduser("~/.config/cava/waybar-center.conf")
+CONFIG = "/home/h3bzzz/.config/cava/waybar-center.conf"
 HALF = 10
 LEVELS = "▁▂▃▄▅▆▇█"
 COLORS = [
@@ -104,3 +103,5 @@ try:
         emit(values)
 finally:
     shutdown()
+
+
