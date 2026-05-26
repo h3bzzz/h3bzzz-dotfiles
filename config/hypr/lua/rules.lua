@@ -66,3 +66,24 @@ hl.window_rule({
 	match = { class = "^(com\\.mitchellh\\.ghostty)$" },
 	opacity = "0.96 override 0.88 override",
 })
+
+-- Screensaver fullscreen per monitor
+-- Each ghostty instance uses a unique GTK app ID (com.tte.screensaver.MONITOR)
+-- so the rule can assign it to the correct display + fullscreen
+hl.window_rule({
+	name = "screensaver-DP-3",
+	match = { class = "^(com\\.tte\\.screensaver\\.DP-3)$" },
+	fullscreen = true,
+	monitor = "DP-3",
+	border_size = 0,
+	rounding = 0,
+})
+
+hl.window_rule({
+	name = "screensaver-HDMI-A-1",
+	match = { class = "^(com\\.tte\\.screensaver\\.HDMI-A-1)$" },
+	fullscreen = true,
+	monitor = "HDMI-A-1",
+	border_size = 0,
+	rounding = 0,
+})
