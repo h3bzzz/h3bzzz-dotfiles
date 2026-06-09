@@ -32,6 +32,7 @@ Omarchy kept on breaking on one of my desktops, I already had a hyprland configu
 - **Hyprlock** — Lockscreen with clock, date, caps-lock warning
 - **Hypridle** — Timed idle → screensaver → lock → DPMS → suspend
 - **Neovim** — LazyVim-based config with LSP, DAP, fuzzy finding, dashboard
+- **Tmux** - Basic Tmux config.
 - **Cava** — Audio visualizer with 3 bar configs + GLSL shaders
 - **Screensaver** — TTE terminal text effects in fullscreen ghostty
 - **Wallpaper picker** — Rofi-based (SUPER+W), browses `~/Pictures/wallpapers/`
