@@ -60,6 +60,22 @@ hl.window_rule({
 	float = true,
 })
 
+-- Portal file picker (open/save dialogs) — float + center
+hl.window_rule({
+	name = "float-portal-filechooser",
+	match = { class = "xdg-desktop-portal-gtk" },
+	float = true,
+	center = true,
+})
+
+-- Browser Picture-in-Picture — float + pin to all workspaces
+hl.window_rule({
+	name = "pip-float",
+	match = { title = "Picture-in-Picture" },
+	float = true,
+	pin = true,
+})
+
 -- Ghostty Transparency
 hl.window_rule({
 	name = "ghostty-opacity",

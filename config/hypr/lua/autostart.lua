@@ -2,7 +2,7 @@ local home = os.getenv("HOME") or "/home/h3bzzz"
 
 hl.env("XCURSOR_SIZE", "24")
 hl.env("HYPRCURSOR_SIZE", "24")
-hl.env("HYPRSHOT_DIR", home .. "/Pictures/wallpapers")
+hl.env("HYPRSHOT_DIR", home .. "/Pictures/Screenshots")
 hl.env("GDK_BACKEND", "wayland,x11")
 hl.env("QT_QPA_PLATFORM", "wayland;xcb")
 hl.env("SDL_VIDEODRIVER", "wayland")
@@ -21,6 +21,7 @@ hl.on("hyprland.start", function()
 	hl.exec_cmd("hypridle")
 	hl.exec_cmd("ghostty")
 	hl.exec_cmd("wl-paste --type text --watch cliphist store")
+	hl.exec_cmd("wl-paste --type image --watch cliphist store")
 end)
 
 -- Shutdown hook

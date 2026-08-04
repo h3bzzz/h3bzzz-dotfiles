@@ -133,5 +133,9 @@ hl.config({
 
 		follow_mouse = 1,
 		sensitivity = 0,
+
+		repeat_delay = 250,
+		repeat_rate = 40,
+		numlock_by_default = true,
 	}
 })

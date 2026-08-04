@@ -1,6 +1,6 @@
 {
   "hyprland/workspaces": {
-    "format": "{icon}",
+    "format": "{id}",
     "on-click": "activate",
     "format-icons": {
       "1": "󰲠",
@@ -166,24 +166,17 @@
     "spacing": 10
   },
 
+  // Backed by dunst (the running daemon), not swaync. Left-click toggles DND,
+  // right-click pops the last notification back from history.
   "custom/notification": {
-    "tooltip": false,
-    "format": "{icon}",
-    "format-icons": {
-      "notification": "<span foreground='#eb6f92'><sup>•</sup></span>",
-      "none": "",
-      "dnd-notification": "󰂛<span foreground='#f6c177'><sup>•</sup></span>",
-      "dnd-none": "󰂛",
-      "inhibited-notification": "<span foreground='#f6c177'><sup>•</sup></span>",
-      "inhibited-none": "",
-      "dnd-inhibited-notification": "󰂛<span foreground='#ebbcba'><sup>•</sup></span>",
-      "dnd-inhibited-none": "󰂛"
-    },
+    "tooltip": true,
+    "format": "{}",
     "return-type": "json",
-    "exec-if": "which swaync-client",
-    "exec": "swaync-client -swb",
-    "on-click": "swaync-client -t -sw",
-    "on-click-right": "swaync-client -d -sw",
+    "exec-if": "command -v dunstctl",
+    "exec": "~/.config/waybar/scripts/dunst.sh",
+    "interval": 2,
+    "on-click": "dunstctl set-paused toggle",
+    "on-click-right": "dunstctl history-pop",
     "escape": true
   },
 

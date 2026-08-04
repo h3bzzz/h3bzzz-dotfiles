@@ -126,8 +126,13 @@ export ARCHFLAGS="-arch $(uname -m)"
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
-# Z LUA
-eval "$(lua /opt/z_lua/z.lua --init zsh enhanced once echo)"
+# Smart directory jumping: prefer zoxide, fall back to z.lua.
+# (Both bind `z`; loading both would conflict, so only one is active.)
+if command -v zoxide >/dev/null 2>&1; then
+  eval "$(zoxide init zsh)"   # `z <dir>` to jump, `zi` for interactive fzf pick
+else
+  eval "$(lua /opt/z_lua/z.lua --init zsh enhanced once echo)"
+fi
 
 # Created by `pipx` on 2026-05-19 14:00:09
 export PATH="$PATH:/home/h3bzzz/.local/bin"
@@ -142,3 +147,56 @@ export GOROOT="/usr/lib/go"
 export GOPATH="$HOME/go"
 export PATH="$PATH:$GOROOT/bin:$GOPATH/bin"
 export GO111MODULE=on
+
+# ─────────────────────────────────────────────────────────────────
+#  Ricer QoL — editor, fzf integration, dev/pentest helpers
+# ─────────────────────────────────────────────────────────────────
+export EDITOR="nvim"
+export VISUAL="nvim"
+export MANPAGER="less -R"
+
+# fzf powered by fd + bat previews (Ctrl-T files, Alt-C dirs, Ctrl-R history)
+if command -v fd >/dev/null 2>&1; then
+  export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
+  export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+  export FZF_ALT_C_COMMAND='fd --type d --hidden --follow --exclude .git'
+fi
+export FZF_DEFAULT_OPTS="--height 45% --layout=reverse --border=rounded --info=inline \
+  --color=fg:#e0def4,bg:-1,hl:#ebbcba,fg+:#e0def4,bg+:#26233a,hl+:#ebbcba \
+  --color=border:#403d52,header:#31748f,info:#9ccfd8,pointer:#c4a7e7,marker:#eb6f92,prompt:#908caa"
+command -v bat >/dev/null 2>&1 && export FZF_CTRL_T_OPTS="--preview 'bat --color=always --style=numbers --line-range=:200 {}'"
+
+# Navigation / listing
+alias ..='cd ..'
+alias ...='cd ../..'
+alias ....='cd ../../..'
+if command -v eza >/dev/null 2>&1; then
+  alias ls='eza --group-directories-first --icons=auto'
+  alias ll='eza -lah --group-directories-first --icons=auto --git'
+  alias la='eza -a  --group-directories-first --icons=auto'
+  alias lt='eza --tree --level=2 --icons=auto --group-directories-first'
+else
+  alias ll='ls -lah --group-directories-first --color=auto'
+  alias la='ls -A --color=auto'
+fi
+alias grep='grep --color=auto'
+alias catp='bat --paging=never'        # bat without shadowing real `cat`
+alias reload='exec zsh'                 # reload the shell
+
+# Dev / pentest helpers
+alias ports='ss -tulpn'                 # listening sockets + owning process
+alias myip="ip -brief addr | grep -v '^lo'"
+alias pubip='curl -fsSL https://ifconfig.me; echo'
+alias serve='python3 -m http.server'    # quick file transfer / exfil catcher
+alias reqbin='nc -lvnp'                 # nc -lvnp <port> : listener/catcher
+genpass() { tr -dc 'A-Za-z0-9!@#$%^&*' </dev/urandom | head -c "${1:-24}"; echo; }
+mkcd()    { mkdir -p -- "$1" && cd -- "$1"; }
+extract() {
+  case "$1" in
+    *.tar.bz2) tar xjf "$1" ;; *.tar.gz) tar xzf "$1" ;; *.tar.xz) tar xJf "$1" ;;
+    *.tbz2) tar xjf "$1" ;;    *.tgz) tar xzf "$1" ;;    *.tar) tar xf "$1" ;;
+    *.bz2) bunzip2 "$1" ;;     *.gz) gunzip "$1" ;;      *.zip) unzip "$1" ;;
+    *.rar) unrar x "$1" ;;     *.7z) 7z x "$1" ;;        *.Z) uncompress "$1" ;;
+    *) echo "extract: unknown archive '$1'" ;;
+  esac
+}
