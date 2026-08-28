@@ -5,8 +5,7 @@ bar, launcher, terminal, lock screen, notifications and system monitor are all
 recoloured from it in one pass — not with a fixed palette that merely sits next
 to the wallpaper, but with colours measured out of the image itself.
 
-![Desktop](./assets/main-desktop.png)
-![Tiling](./assets/tiles.png)
+![Desktop](./assets/desktop.png)
 
 > Omarchy kept breaking on one of my desktops. I already had a Hyprland config
 > I was building on my laptop and had grown used to, so I made it portable.
@@ -70,6 +69,24 @@ Net effect over the library: accents sit **37% closer** to colours actually
 present in the wallpaper, with zero regressions and no accent below the contrast
 floor.
 
+The same desktop under four wallpapers — nothing changed but the image. The bar,
+the window chrome and every widget in `btop` follow it:
+
+![Theming across four wallpapers](./assets/theming.png)
+
+| wallpaper | `pine` accent |
+| --- | --- |
+| Tokyo Night (blue) | `#397587` |
+| Gruvbox (warm) | `#8d583e` |
+| Forest (green) | `#348c74` |
+| Topographic (violet) | `#534ee2` |
+
+Pick one with `SUPER + W`. The wheel is a Quickshell coverflow over
+`~/Pictures/wallpapers`; scrolling costs nothing, and only committing a pick
+re-derives the palette:
+
+![Wallpaper wheel](./assets/wallpaper-wheel.png)
+
 Re-theme at any time:
 
 ```bash
@@ -92,6 +109,8 @@ MATUGEN_SCHEME=scheme-content apply-theme.sh   # or override the scheme
 | **Thornwatch** | Terminal screensaver — clock, vitals, recon and lore panels |
 | **swaync** | Notification centre |
 | **btop / cava / nvim / tmux / zsh** | Monitor, visualiser, LazyVim, multiplexer, p10k prompt |
+
+![Tiled workspace](./assets/tiling.png)
 
 ---
 
