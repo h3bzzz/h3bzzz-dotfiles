@@ -25,11 +25,26 @@ PanelWindow {
     implicitWidth: bar.implicitWidth + 80
     implicitHeight: bar.implicitHeight + headroom
 
-    // only the bar itself eats clicks; everything else passes through
-    mask: Region { item: bar }
+    // Auto-hide. The dock is up while the pointer has moved recently, or while
+    // it is resting on the dock itself -- without the hover term a motionless
+    // cursor would fade the bar out from underneath itself. Typing is not
+    // activity, so the dock stays down for as long as the mouse does.
+    readonly property bool shown: CursorWatch.active || hoveredIndex >= 0
+
+    // Delay the first evaluation by one tick so the Behaviors below have a
+    // false -> true edge to animate: that is what plays the start-up reveal.
+    property bool ready: false
+    Component.onCompleted: ready = true
+
+    readonly property bool up: ready && shown
+
+    // Only the bar itself eats clicks, and only while the dock is up --
+    // a hidden dock must not swallow clicks on the bare desktop.
+    mask: Region { item: win.up ? bar : null }
 
     // fractional index under the cursor; -1 when idle
     property real hoveredIndex: -1
+    onUpChanged: if (!up) hoveredIndex = -1
 
     // slot layout, computed once -- nothing here reacts to hover
     readonly property int itemCount: 6
@@ -44,13 +59,27 @@ PanelWindow {
         implicitWidth: bar.implicitWidth
         implicitHeight: bar.implicitHeight
 
-        // slide-up reveal on startup
-        opacity: 0
-        Component.onCompleted: reveal.start()
-        ParallelAnimation {
-            id: reveal
-            NumberAnimation { target: shell; property: "opacity"; from: 0; to: 1; duration: 420; easing.type: Easing.OutCubic }
-            NumberAnimation { target: shell; property: "y"; from: 40; to: 0; duration: 520; easing.type: Easing.OutCubic }
+        // Reveal and hide are the same transition, so the start-up slide-up
+        // costs nothing extra: `up` is false for the first tick, then true.
+        // The offset goes through the anchor margin rather than `y`, which the
+        // bottom anchor would just overwrite on the next layout pass. A
+        // negative margin walks the bar off the bottom of the layer surface,
+        // and the surface edge clips it -- that clipping is the slide.
+        opacity: win.up ? 1 : 0
+        anchors.bottomMargin: win.up ? 0 : -Theme.dockSlide
+        visible: opacity > 0.01   // stop compositing a dock nobody can see
+
+        Behavior on opacity {
+            NumberAnimation {
+                duration: win.up ? Theme.dockShowMs : Theme.dockHideMs
+                easing.type: Easing.OutCubic
+            }
+        }
+        Behavior on anchors.bottomMargin {
+            NumberAnimation {
+                duration: win.up ? Theme.dockShowMs : Theme.dockHideMs
+                easing.type: Easing.OutCubic
+            }
         }
 
         // soft shadow under the bar
@@ -160,7 +189,11 @@ PanelWindow {
                 DockItem {
                     index: 5; hoveredIndex: win.hoveredIndex
                     label: "Files"; accent: Theme.love
-                    iconSource: Quickshell.iconPath("org.xfce.thunar")
+                    // Thunar's own logo does not sit with the rest of the row,
+                    // and this slot reads as "files" rather than as one vendor,
+                    // so its icon is drawn from the wallpaper palette instead.
+                    // matugen regenerates it -- see templates/filemanager.svg.
+                    iconSource: "file://" + Quickshell.shellDir + "/icons/filemanager.svg"
                     exec: ["thunar"]
                     appIdMatch: ["thunar"]
                 }

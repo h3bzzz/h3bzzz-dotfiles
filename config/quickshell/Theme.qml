@@ -33,6 +33,15 @@ Singleton {
     readonly property real  magAmount:   0.55 // peak extra scale under cursor
     readonly property real  magSpread:   1.05 // how many neighbours ride along
 
+    // Dock auto-hide. CursorWatch clears `active` after dockIdleMs with no
+    // pointer motion; the dock then slides down by dockSlide and fades out.
+    // The reveal is faster than the hide so the dock reads as answering the
+    // mouse rather than animating at it.
+    readonly property int   dockIdleMs:  4000
+    readonly property int   dockShowMs:  200
+    readonly property int   dockHideMs:  420
+    readonly property int   dockSlide:   46   // px the bar drops while hidden
+
     // ---- Popup surfaces (power menu, app launcher) ------------------
     //
     // Waybar sits at y=0 with height 34 and `margin-top: -2px` in its CSS, so
