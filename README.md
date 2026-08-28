@@ -124,15 +124,29 @@ git clone https://github.com/h3bzzz/h3bzzz-dotfiles ~/h3bzzz-dotfiles
 cd ~/h3bzzz-dotfiles
 
 ./install.sh --deps    # packages, oh-my-zsh, p10k, plugins, then deploy
-./install.sh           # deploy only (idempotent — safe to re-run)
+./install.sh           # deploy only
+
+./install.sh --copy    # standalone: copy the configs, no symlinks
+./install.sh --link    # tracked: symlink this repo into ~/.config
 ```
+
+With neither `--copy` nor `--link`, an interactive run asks which you want.
 
 Then `hyprctl reload`, `chsh -s $(which zsh)`, and run `nvim` once to let
 LazyVim install its plugins.
 
 ### How the deploy works
 
-`install.sh` **symlinks** this repo into `~/.config` rather than copying it:
+Two modes. The choice only matters *after* the install.
+
+**`--copy` — standalone.** Files are copied into `~/.config`. The rice is
+yours: edit anything, delete the clone, the desktop keeps working. Nothing you
+change ever touches this repo. Re-running `--copy` overwrites the copies (the
+old ones are backed up first), so a pull-then-reinstall would discard local
+edits — keep your own git repo if you want history. Wallpapers are merged into
+`~/Pictures/wallpapers`, so your own images there survive a re-run.
+
+**`--link` — tracked.** This repo is symlinked into `~/.config`:
 
 ```
 ~/.config/hypr  ->  ~/h3bzzz-dotfiles/config/hypr
@@ -142,10 +156,14 @@ LazyVim install its plugins.
 ```
 
 So editing `~/.config/hypr/lua/binds.lua` **is** editing the repo. Every change
-you make to the rice shows up in `git status` with nothing to sync back by hand.
+you make to the rice shows up in `git status` with nothing to sync back by
+hand, and re-running is a no-op on paths that are already correct. This is the
+mode to pick if you intend to track or contribute the rice.
 
-Anything already at those paths is moved to `<name>.bak-<timestamp>` first, and
-re-running is a no-op on paths that are already correct.
+Either way, anything already at those paths is moved to
+`<name>.bak-<timestamp>` first. Nothing in the configs points at the clone —
+every path resolves through `~/.config` and `~/Pictures/wallpapers` — so the
+copy install has no hidden tie back to this repo.
 
 ### Generated files are not tracked
 
@@ -202,7 +220,7 @@ Browser and tool launchers (`B` Zen, `F` Firefox, `G` Chrome, `Y` VS Code,
 
 ```
 h3bzzz-dotfiles/
-├── install.sh              # symlink deploy + package bootstrap
+├── install.sh              # copy/symlink deploy + package bootstrap
 ├── .githooks/pre-commit    # credential guard
 ├── assets/                 # screenshots for this README
 ├── wallpapers/             # bundled wallpapers + CREDITS.md

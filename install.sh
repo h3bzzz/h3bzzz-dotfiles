@@ -2,14 +2,23 @@
 #
 # h3bzzz's Hyprland rice -- installer.
 #
-#   ./install.sh              deploy configs only
+#   ./install.sh              deploy configs (asks link-or-copy when interactive)
+#   ./install.sh --copy       standalone install: COPY the configs, no symlinks
+#   ./install.sh --link       tracked install: SYMLINK this repo into ~/.config
 #   ./install.sh --deps       install packages first, then deploy
 #   ./install.sh --deps-only  packages, no deploy
 #
-# The deploy step SYMLINKS this repo into ~/.config rather than copying it.
-# That is deliberate: once linked, editing ~/.config/hypr/... *is* editing
-# this repo, so `git status` here shows every change you make to the rice and
-# nothing has to be synced back by hand.
+# Two deploy modes, and the choice only matters afterwards:
+#
+#   copy  Files are copied into ~/.config. The rice is yours -- edit anything,
+#         delete this clone, the desktop keeps working. Nothing you change ever
+#         touches the repo. Re-running --copy overwrites the copies (the old
+#         ones are backed up first), so pull-then-reinstall would discard local
+#         edits: that is the trade for being unchained.
+#
+#   link  ~/.config/hypr and friends become symlinks into this repo, so editing
+#         ~/.config/hypr/... *is* editing the clone and `git status` here shows
+#         every change. Right if you intend to track or contribute the rice.
 #
 # Target: Arch Linux + Hyprland. Other distros get a best-effort package pass
 # and are otherwise on their own for the AUR-only pieces (matugen, quickshell).
@@ -26,15 +35,38 @@ ok()   { printf '    %s+%s %s\n' "$GRN" "$OFF" "$*"; }
 warn() { printf '    %s!%s %s\n' "$YLW" "$OFF" "$*"; }
 err()  { printf '    %sx%s %s\n' "$RED" "$OFF" "$*" >&2; }
 
-DO_DEPS=false; DO_DEPLOY=true
+DO_DEPS=false; DO_DEPLOY=true; MODE=""
 for arg in "$@"; do
     case "$arg" in
         --deps)      DO_DEPS=true ;;
         --deps-only) DO_DEPS=true; DO_DEPLOY=false ;;
-        -h|--help)   sed -n '3,15p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 0 ;;
+        --copy)      MODE=copy ;;
+        --link)      MODE=link ;;
+        -h|--help)   sed -n '3,23p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 0 ;;
         *)           err "unknown option: $arg"; exit 1 ;;
     esac
 done
+
+# Nobody should get symlinked into a stranger's repo without saying so, and
+# nobody should be prompted in a script. Ask when there is a terminal to ask
+# on; otherwise keep the historical default.
+choose_mode() {
+    [ -n "$MODE" ] && return 0
+    if [ ! -t 0 ]; then MODE=link; return 0; fi
+
+    printf '\n%sHow should the configs be installed?%s\n\n' "$BOLD" "$OFF"
+    printf '  %s1%s  copy  -- files are copied into %s. Edit them freely;\n' "$BOLD" "$OFF" "$CONFIG"
+    printf '           nothing links back to this clone, which you can delete.\n'
+    printf '  %s2%s  link  -- symlink this repo into %s, so your edits\n' "$BOLD" "$OFF" "$CONFIG"
+    printf '           land in `git status` here. For tracking/contributing.\n\n'
+    local reply
+    read -r -p "  Choice [1]: " reply
+    case "${reply:-1}" in
+        2|l|link) MODE=link ;;
+        *)        MODE=copy ;;
+    esac
+    printf '\n'
+}
 
 # ── packages ─────────────────────────────────────────────────────────────
 
@@ -112,36 +144,60 @@ install_deps() {
 
 # ── deploy ───────────────────────────────────────────────────────────────
 
-# Link $1 -> $2, moving anything already there to .bak-<timestamp> first.
-# An existing correct link is left alone, so re-running is a no-op.
 STAMP="$(date +%Y%m%d-%H%M%S)"
+
+# Move whatever is at $1 out of the way, once, into .bak-<timestamp>.
+backup() {
+    local dst="$1"
+    if [ -e "$dst" ] || [ -L "$dst" ]; then
+        mv "$dst" "${dst}.bak-${STAMP}"
+        warn "$(basename "$dst") existed -> $(basename "$dst").bak-${STAMP}"
+    fi
+}
+
+# Link $1 -> $2. An existing correct link is left alone, so re-running is a
+# no-op.
 link() {
     local src="$1" dst="$2"
     if [ -L "$dst" ] && [ "$(readlink -f "$dst")" = "$(readlink -f "$src")" ]; then
         ok "$(basename "$dst") (already linked)"
         return 0
     fi
-    if [ -e "$dst" ] || [ -L "$dst" ]; then
-        mv "$dst" "${dst}.bak-${STAMP}"
-        warn "$(basename "$dst") existed -> $(basename "$dst").bak-${STAMP}"
-    fi
+    backup "$dst"
     mkdir -p "$(dirname "$dst")"
     ln -sfn "$src" "$dst"
     ok "$(basename "$dst")"
 }
 
+# Copy $1 -> $2, dereferencing so the result contains no path back into the
+# repo. Unlike link() this cannot be idempotent: the destination is the user's
+# to edit, so an existing one is always backed up rather than silently kept.
+copy() {
+    local src="$1" dst="$2"
+    backup "$dst"
+    mkdir -p "$(dirname "$dst")"
+    cp -RL --preserve=mode "$src" "$dst"
+    ok "$(basename "$dst")"
+}
+
+place() { if [ "$MODE" = link ]; then link "$@"; else copy "$@"; fi; }
+
 deploy() {
-    say "Linking configs into $CONFIG"
+    if [ "$MODE" = link ]; then
+        say "Linking configs into $CONFIG"
+    else
+        say "Copying configs into $CONFIG"
+    fi
     local d
     for d in "$DOTFILES"/config/*/; do
         d="${d%/}"
         [ "$(basename "$d")" = "zsh" ] && continue   # zsh lives in $HOME
-        link "$d" "$CONFIG/$(basename "$d")"
+        place "$d" "$CONFIG/$(basename "$d")"
     done
 
-    say "Linking shell config into \$HOME"
-    link "$DOTFILES/config/zsh/.zshrc"    "$HOME/.zshrc"
-    link "$DOTFILES/config/zsh/.p10k.zsh" "$HOME/.p10k.zsh"
+    say "Installing shell config into \$HOME"
+    place "$DOTFILES/config/zsh/.zshrc"    "$HOME/.zshrc"
+    place "$DOTFILES/config/zsh/.p10k.zsh" "$HOME/.p10k.zsh"
 
     # Secrets stub. .zshrc sources this when present and .gitignore excludes
     # it, so machine-local keys never reach the repo.
@@ -155,9 +211,17 @@ STUB
         ok "secrets.zsh stub (gitignored)"
     fi
 
-    say "Linking wallpapers"
+    say "Installing wallpapers"
     mkdir -p "$HOME/Pictures"
-    link "$DOTFILES/wallpapers" "$WALLPAPERS"
+    if [ "$MODE" = link ]; then
+        link "$DOTFILES/wallpapers" "$WALLPAPERS"
+    else
+        # ~84 MB of images. Merge rather than replace: a standalone user's own
+        # wallpapers live here too and must survive a re-run.
+        mkdir -p "$WALLPAPERS"
+        cp -RLn "$DOTFILES/wallpapers/." "$WALLPAPERS/" 2>/dev/null
+        ok "wallpapers -> $WALLPAPERS (existing files kept)"
+    fi
 
     # Point the live-state link at something real so hyprpaper and hyprlock
     # have a background on the first boot.
@@ -170,8 +234,9 @@ STUB
             && ok "default wallpaper: $(basename "$first")"
     fi
 
-    # Credential guard for anyone committing back to this repo.
-    if git -C "$DOTFILES" rev-parse --git-dir >/dev/null 2>&1; then
+    # Credential guard, for the tracked install only -- a copy install never
+    # commits back, so the repo's hooks are none of its business.
+    if [ "$MODE" = link ] && git -C "$DOTFILES" rev-parse --git-dir >/dev/null 2>&1; then
         chmod +x "$DOTFILES/.githooks/"* 2>/dev/null
         git -C "$DOTFILES" config core.hooksPath .githooks 2>/dev/null \
             && ok "pre-commit secret guard enabled"
@@ -182,6 +247,8 @@ STUB
 
 # The palette files are generated, not tracked, so a fresh clone has none.
 # waybar's style.css @imports colors.css and will not start without it.
+# apply-theme.sh only ever addresses ~/.config, so the installed copy is the
+# one to run in either mode.
 generate_theme() {
     say "Generating the palette from the current wallpaper"
     if ! command -v matugen >/dev/null 2>&1; then
@@ -190,7 +257,7 @@ generate_theme() {
         err "  ~/.config/hypr/scripts/apply-theme.sh"
         return 1
     fi
-    if bash "$DOTFILES/config/hypr/scripts/apply-theme.sh" >/dev/null 2>&1; then
+    if bash "$CONFIG/hypr/scripts/apply-theme.sh" >/dev/null 2>&1; then
         ok "waybar, rofi, ghostty, quickshell, swaync, btop and hyprland palettes written"
     else
         warn "apply-theme.sh failed; run it by hand once a wallpaper is set"
@@ -200,28 +267,28 @@ generate_theme() {
 # ── monitors ─────────────────────────────────────────────────────────────
 
 configure_monitors() {
-    local settings="$DOTFILES/config/hypr/lua/settings.lua"
+    local settings="$CONFIG/hypr/lua/settings.lua"
     local json
     if ! command -v hyprctl >/dev/null 2>&1 || ! json="$(hyprctl -j monitors 2>/dev/null)" \
        || [ "$(printf '%s' "$json" | jq 'length' 2>/dev/null || echo 0)" -lt 1 ]; then
         warn "Hyprland is not running -- leaving the monitor block as it is."
-        warn "Once it is up:  hyprctl monitors   then edit lua/settings.lua"
+        warn "Once it is up:  hyprctl monitors   then edit $settings"
         return 0
     fi
     say "Detected monitors"
     printf '%s' "$json" | jq -r '.[] | "    \(.name)  \(.width)x\(.height)@\(.refreshRate|round)  scale \(.scale)"'
-    warn "settings.lua is tracked and is NOT rewritten automatically -- doing so"
-    warn "would create a diff on every machine you install to. Copy the values"
-    warn "above into its hl.monitor{} block if they differ."
+    warn "settings.lua is NOT rewritten automatically -- copy the values above"
+    warn "into the hl.monitor{} block of $settings if they differ."
 }
 
 # ── run ──────────────────────────────────────────────────────────────────
 
 printf '%s\n' "${BOLD}h3bzzz's Hyprland rice${OFF}"
-printf '%s\n\n' "${DIM}repo: $DOTFILES${OFF}"
+printf '%s\n' "${DIM}repo: $DOTFILES${OFF}"
 
 $DO_DEPS && install_deps
 if $DO_DEPLOY; then
+    choose_mode
     deploy
     generate_theme
     configure_monitors
@@ -235,7 +302,20 @@ ${BOLD}Done.${OFF}
   Wallpapers  SUPER+W  (wheel picker; applying one re-themes the whole desktop)
   Shell       chsh -s \$(which zsh)   then log out and back in
   Neovim      run nvim once to let LazyVim install its plugins
+EOF
+
+if [ "$DO_DEPLOY" = true ] && [ "$MODE" = link ]; then
+cat <<EOF
 
   Your configs are symlinks into this repo, so anything you change shows up in
   \`git -C $DOTFILES status\`. Commit it when you want to keep it.
 EOF
+elif [ "$DO_DEPLOY" = true ]; then
+cat <<EOF
+
+  Your configs are your own copies under $CONFIG -- no symlinks, no ties to
+  this clone, which you can now delete. Change anything you like.
+  Re-running ./install.sh --copy overwrites them (backing the old ones up
+  as .bak-<timestamp>), so keep your own git repo if you want history.
+EOF
+fi
