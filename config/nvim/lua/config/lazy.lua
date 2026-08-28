@@ -35,16 +35,6 @@ require("lazy").setup({
 
     -- Load all plugins from lua/plugins folder
     { import = "plugins" },
-
-    -- Ensure CMP & deps are installed early so lsp.lua won't error
-    { "hrsh7th/nvim-cmp" },
-    { "hrsh7th/cmp-nvim-lsp" },
-    { "hrsh7th/cmp-buffer" },
-    { "hrsh7th/cmp-path" },
-    { "hrsh7th/cmp-cmdline" },
-    { "L3MON4D3/LuaSnip" },
-    { "saadparwaiz1/cmp_luasnip" },
-    { "rafamadriz/friendly-snippets" },
   },
   defaults = {
     lazy = false, -- Load everything on startup
@@ -52,6 +42,13 @@ require("lazy").setup({
   },
   install = {
     colorscheme = { "tokyonight", "habamax" },
+  },
+  -- Disable lazy's luarocks integration. The system has no lua5.1 binary and
+  -- lazy's toolchain is Lua 5.5, so rock builds (oxocarbon's fennel dep) fail.
+  -- Nothing here needs a runtime rock: oxocarbon ships compiled lua, and
+  -- image.nvim uses processor = "magick_cli" (the ImageMagick CLI, not the rock).
+  rocks = {
+    enabled = false,
   },
   checker = {
     enabled = true,

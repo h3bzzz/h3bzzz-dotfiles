@@ -1,45 +1,25 @@
-# Rose Pine Moon Ghostty Configuration
-
-# FONTS
 font-family = JetBrainsMono Nerd Font
-font-size = 11
+font-size = 12
+font-thicken = true
 
-# CURSOR & THEME
+#THEME
+# Regenerated from the wallpaper into themes/matugen by
+# ~/.config/hypr/scripts/apply-theme.sh, which then SIGUSR2s ghostty.
+theme = matugen
+
+window-padding-x = 10
+window-padding-y = 10
+window-height = 30
+window-width = 120
+
+background-opacity = 0.90
+
 cursor-style = bar
-cursor-style-blink = false
+cursor-style-blink = true
 
-# ROSE PINE MOON COLOR SCHEME
-background = #232136
-foreground = #e0def4
+shell-integration = zsh
+shell-integration-features = cursor,sudo
 
-# Selection
-selection-foreground = #e0def4
-selection-background = #44415a
-
-# Cursor colors
-cursor-color = #56526e
-cursor-text = #e0def4
-
-# TRANSPARENCY & BLUR
-background-opacity = 0.88
-
-# WINDOW
-padding = 8
-window-decoration = false
-width = 100
-height = 100
-
-# SCROLLBACK
-scrollback-limit = 10000
-
-# SHELL
-command = /usr/bin/zsh
-
-# PERF
-gtk-single-instance = false
-
-# MOUSE
-mouse-hide-while-typing = true
-
-# COPY/PASTE
-copy-on-select = clipboard
+# KEYBINDS
+keybind = ctrl+shift+c=copy_to_clipboard
+keybind = ctrl+shift+v=paste_from_clipboard

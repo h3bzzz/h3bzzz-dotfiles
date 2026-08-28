@@ -1,20 +1,44 @@
 #!/usr/bin/env python3
 
 import json
+import os
 import signal
 import subprocess
 import sys
 from typing import cast, TextIO
 
-CONFIG = "/home/h3bzzz/.config/cava/waybar.conf"
+CONFIG = os.path.expanduser("~/.config/cava/waybar.conf")
 LEVELS = "▁▂▃▄▅▆▇█"
+# ── Palette ─────────────────────────────────────────────────────────────
+# ~/.config/matugen/colors.json is regenerated from the wallpaper by
+# apply-theme.sh, which then SIGUSR2s waybar -- and that restarts this
+# script, so reading the file once at start-up is enough.
+#
+# The Rose Pine defaults stay as a fallback: this module has to keep drawing
+# if the file is missing, unreadable, or caught mid-write by the reload.
+PALETTE = {
+    "base": "#191724", "surface": "#1f1d2e", "overlay": "#26233a",
+    "muted": "#6e6a86", "subtle": "#908caa", "text": "#e0def4",
+    "love": "#eb6f92", "gold": "#f6c177", "rose": "#ebbcba",
+    "pine": "#31748f", "foam": "#9ccfd8", "iris": "#c4a7e7",
+}
+
+try:
+    with open(os.path.expanduser("~/.config/matugen/colors.json")) as _fh:
+        PALETTE.update({
+            k: v for k, v in json.load(_fh).items()
+            if k in PALETTE and isinstance(v, str)
+        })
+except (OSError, ValueError):
+    pass
+
 COLORS = [
-    (80, "#6e6a86"),
-    (180, "#908caa"),
-    (320, "#31748f"),
-    (520, "#9ccfd8"),
-    (760, "#c4a7e7"),
-    (1001, "#f6c177"),
+    (80,   PALETTE["muted"]),
+    (180,  PALETTE["subtle"]),
+    (320,  PALETTE["pine"]),
+    (520,  PALETTE["foam"]),
+    (760,  PALETTE["iris"]),
+    (1001, PALETTE["gold"]),
 ]
 
 proc = None
@@ -24,7 +48,7 @@ def color_for(value: int) -> str:
     for threshold, color in COLORS:
         if value < threshold:
             return color
-    return "#eb6f92"
+    return PALETTE["love"]
 
 
 def glyph_for(value: int) -> str:
@@ -98,5 +122,3 @@ try:
         emit(values)
 finally:
     shutdown()
-
-

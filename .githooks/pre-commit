@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# Block commits that carry credentials.
+#
+# This repo is public and its whole purpose is to be copied onto other
+# machines, so a key leaked here is a key published to the world. A live
+# ProjectDiscovery token was sitting in ~/.zshrc while this repo was being
+# assembled -- one sync away from being pushed. Hence this hook.
+#
+# Enable with:  git config core.hooksPath .githooks   (install.sh does it)
+set -uo pipefail
+
+staged=$(git diff --cached --name-only --diff-filter=ACM)
+[ -z "$staged" ] && exit 0
+
+# Provider tokens, private keys, and the generic `key = "long-value"` shape.
+PATTERNS='(AKIA[0-9A-Z]{16}'
+PATTERNS+='|gh[pousr]_[A-Za-z0-9]{30,}'
+PATTERNS+='|github_pat_[A-Za-z0-9_]{20,}'
+PATTERNS+='|xox[baprs]-[A-Za-z0-9-]{10,}'
+PATTERNS+='|-----BEGIN [A-Z ]*PRIVATE KEY-----'
+PATTERNS+='|[A-Za-z0-9_]*(API_?KEY|SECRET|TOKEN|PASSWORD)[A-Za-z0-9_]*[[:space:]]*=[[:space:]]*"[A-Za-z0-9/+_-]{16,}"'
+PATTERNS+=')'
+
+hits=0
+while IFS= read -r f; do
+    [ -n "$f" ] || continue
+    # Read the staged blob, not the worktree file: what is committed is what matters.
+    if match=$(git show ":$f" 2>/dev/null | grep -nIEm3 "$PATTERNS" 2>/dev/null); then
+        printf 'pre-commit: possible credential in %s\n' "$f" >&2
+        printf '%s\n' "$match" | sed 's/^/    /' >&2
+        hits=1
+    fi
+done <<< "$staged"
+
+if [ "$hits" -ne 0 ]; then
+    cat >&2 <<'MSG'
+
+Commit blocked.
+
+Move the value into ~/.config/zsh/secrets.zsh (gitignored, sourced by .zshrc)
+or export it from your environment, then commit again.
+
+Genuine false positive:  git commit --no-verify
+MSG
+    exit 1
+fi
+exit 0

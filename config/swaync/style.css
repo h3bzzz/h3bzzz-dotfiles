@@ -1,0 +1,660 @@
+/* ============================================================
+   Rose Pine — swaync control center
+   GTK4. No @keyframes and no text-shadow: the GTK4 CSS engine
+   ignores both, so every accent here is a real box-shadow.
+   ============================================================ */
+
+/* Palette and every colour-valued swaync variable live in colors.css,
+   regenerated from the wallpaper by ~/.config/hypr/scripts/apply-theme.sh.
+   GTK requires @import ahead of any other rule. */
+@import url("colors.css");
+
+/* Geometry only -- the colour half of swaync's own variables is in colors.css. */
+:root {
+  --noti-bg-alpha: 0.96;
+  --border-radius: 14px;
+  --font-size-body: 13px;
+  --font-size-summary: 14px;
+  --notification-icon-size: 44px;
+  --mpris-album-art-icon-size: 72px;
+  --widget-volume-row-icon-size: 22px;
+}
+
+* {
+  font-family: "JetBrainsMono Nerd Font", "Symbols Nerd Font", sans-serif;
+  font-size: 13px;
+}
+
+/* ============================================================
+   Shell
+   ============================================================ */
+
+.blank-window,
+.control-center-list,
+.floating-notifications {
+  background: transparent;
+}
+
+.control-center {
+  background: linear-gradient(160deg,
+              alpha(@surface, 0.98) 0%,
+              alpha(@base, 0.99) 55%,
+              alpha(@overlay, 0.98) 100%);
+  color: @text;
+  border-radius: 20px;
+  border: 1px solid alpha(@iris, 0.28);
+  box-shadow: 0 18px 46px rgba(0, 0, 0, 0.62),
+              inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  padding: 4px 0 8px 0;
+}
+
+/* every top-level section shares one rhythm */
+.widget-title,
+.widget-dnd,
+.widget-buttons-grid,
+.widget-volume,
+.widget-backlight,
+.widget-mpris,
+.widget-inhibitors {
+  margin: 6px 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: alpha(@overlay, 0.55);
+  border: 1px solid alpha(@muted, 0.16);
+}
+
+/* ============================================================
+   Title — the one loud element, so the eye lands here first
+   ============================================================ */
+
+.widget-title {
+  margin: 10px 12px 4px 12px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg,
+              alpha(@iris, 0.20),
+              alpha(@pine, 0.14));
+  border: 1px solid alpha(@iris, 0.30);
+  border-radius: 16px;
+  box-shadow: inset 0 -2px 0 alpha(@gold, 0.65);
+}
+
+.widget-title > label {
+  color: @text;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.widget-title > button {
+  background: alpha(@pine, 0.30);
+  color: @foam;
+  border: 1px solid alpha(@foam, 0.30);
+  border-radius: 11px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: none;
+  transition: background 160ms ease, color 160ms ease, box-shadow 160ms ease;
+}
+
+.widget-title > button:hover {
+  background: alpha(@iris, 0.38);
+  color: @text;
+  box-shadow: 0 0 12px alpha(@iris, 0.45);
+}
+
+.widget-title > button:active {
+  background: alpha(@iris, 0.55);
+}
+
+/* ============================================================
+   Do Not Disturb
+   ============================================================ */
+
+.widget-dnd > label {
+  color: @subtle;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.widget-dnd > switch {
+  background: alpha(@muted, 0.45);
+  border: 1px solid alpha(@muted, 0.35);
+  border-radius: 999px;
+  min-width: 46px;
+  min-height: 24px;
+  box-shadow: none;
+  transition: background 180ms ease, box-shadow 180ms ease;
+}
+
+.widget-dnd > switch:checked {
+  background: linear-gradient(135deg, @gold, @love);
+  border-color: alpha(@gold, 0.55);
+  box-shadow: 0 0 14px alpha(@gold, 0.50);
+}
+
+.widget-dnd > switch > slider {
+  background: @text;
+  border-radius: 999px;
+  min-width: 18px;
+  min-height: 18px;
+  margin: 2px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+}
+
+/* ============================================================
+   Quick action grid
+   ============================================================ */
+
+.widget-buttons-grid {
+  padding: 10px;
+}
+
+.widget-buttons-grid > flowbox > flowboxchild {
+  padding: 0;
+}
+
+.widget-buttons-grid > flowbox > flowboxchild > button {
+  background: linear-gradient(135deg,
+              alpha(@pine, 0.22),
+              alpha(@iris, 0.12));
+  color: @subtle;
+  border: 1px solid alpha(@muted, 0.20);
+  border-radius: 12px;
+  margin: 4px;
+  padding: 10px 6px;
+  min-height: 34px;
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: none;
+  transition: background 170ms ease, color 170ms ease, box-shadow 170ms ease;
+}
+
+.widget-buttons-grid > flowbox > flowboxchild > button:hover {
+  background: linear-gradient(135deg,
+              alpha(@foam, 0.38),
+              alpha(@iris, 0.26));
+  color: @text;
+  border-color: alpha(@foam, 0.45);
+  box-shadow: 0 0 14px alpha(@foam, 0.35);
+}
+
+.widget-buttons-grid > flowbox > flowboxchild > button:active,
+.widget-buttons-grid > flowbox > flowboxchild > button.toggle:checked {
+  background: linear-gradient(135deg,
+              alpha(@iris, 0.50),
+              alpha(@pine, 0.34));
+  color: @text;
+  border-color: alpha(@iris, 0.60);
+  box-shadow: inset 0 0 10px alpha(@iris, 0.30);
+}
+
+/* ============================================================
+   Sliders — volume and backlight
+   Left unstyled these render in stock Adwaita blue, which is the
+   single most off-palette thing in the panel.
+   ============================================================ */
+
+.widget-volume,
+.widget-backlight {
+  padding: 10px 16px;
+}
+
+.widget-volume > box > label,
+.widget-backlight > box > label,
+.widget-volume label,
+.widget-backlight label {
+  color: @foam;
+  font-size: 16px;
+  font-weight: 700;
+  margin-right: 10px;
+}
+
+.widget-backlight label {
+  color: @gold;
+}
+
+scale {
+  min-height: 22px;
+}
+
+scale > trough {
+  background: alpha(@base, 0.9);
+  border: 1px solid alpha(@muted, 0.25);
+  border-radius: 999px;
+  min-height: 9px;
+}
+
+scale > trough > highlight {
+  background: linear-gradient(90deg, @foam, @iris);
+  border-radius: 999px;
+  min-height: 9px;
+  box-shadow: 0 0 10px alpha(@iris, 0.55);
+}
+
+.widget-backlight scale > trough > highlight {
+  background: linear-gradient(90deg, @gold, @rose);
+  box-shadow: 0 0 10px alpha(@gold, 0.50);
+}
+
+scale > trough > slider {
+  background: @text;
+  border: 2px solid @surface;
+  border-radius: 999px;
+  min-width: 16px;
+  min-height: 16px;
+  margin: -5px;
+  box-shadow: 0 0 8px alpha(@iris, 0.55);
+  transition: background 150ms ease, box-shadow 150ms ease;
+}
+
+scale > trough > slider:hover {
+  background: @foam;
+  box-shadow: 0 0 14px alpha(@foam, 0.80);
+}
+
+/* the per-app expander is a plain GTK button by default and reads as a
+   second, competing card next to the slider */
+.widget-volume > box > button,
+.widget-volume button {
+  background: alpha(@overlay, 0.75);
+  color: @subtle;
+  border: 1px solid alpha(@muted, 0.22);
+  border-radius: 999px;
+  min-width: 26px;
+  min-height: 26px;
+  padding: 0;
+  margin-left: 10px;
+  box-shadow: none;
+  transition: background 150ms ease, color 150ms ease;
+}
+
+.widget-volume > box > button:hover,
+.widget-volume button:hover {
+  background: alpha(@foam, 0.28);
+  color: @foam;
+}
+
+/* per-app volume rows sit inside the volume widget */
+.per-app-volume {
+  background: alpha(@base, 0.55);
+  border-radius: 10px;
+  margin-top: 8px;
+  padding: 6px 8px;
+}
+
+/* ============================================================
+   Media player
+   ============================================================ */
+
+.widget-mpris {
+  padding: 12px;
+}
+
+.widget-mpris > box > button {
+  color: @subtle;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  border-radius: 999px;
+  transition: color 150ms ease, background 150ms ease;
+}
+
+.widget-mpris > box > button:hover {
+  color: @iris;
+  background: alpha(@iris, 0.16);
+}
+
+.widget-mpris-player {
+  padding: 4px;
+  border-radius: 14px;
+}
+
+.widget-mpris-album-art {
+  border-radius: 14px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55);
+}
+
+.widget-mpris-title {
+  color: @text;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.widget-mpris-subtitle {
+  color: @subtle;
+  font-size: 12px;
+}
+
+/* ============================================================
+   Section header above the notification list
+   ============================================================ */
+
+.widget-label {
+  background: transparent;
+  border: none;
+  margin: 14px 18px 2px 18px;
+  padding: 0 0 6px 0;
+  border-bottom: 1px solid alpha(@muted, 0.22);
+}
+
+.widget-label > label {
+  color: @muted;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* ============================================================
+   Notifications
+   Urgency is carried by a coloured left rail plus a wash that
+   fades out of it, so a critical alert is legible at a glance
+   instead of looking like every other row.
+   ============================================================ */
+
+.notification-row {
+  outline: none;
+  margin: 5px 12px;
+  background: transparent;
+}
+
+.notification-row:focus,
+.notification-row:hover {
+  background: transparent;
+}
+
+.notification-row .notification-background {
+  background: transparent;
+}
+
+.notification-row .notification-background .notification {
+  background: transparent;
+  border-radius: 15px;
+  padding: 0;
+  box-shadow: none;
+}
+
+.notification-row .notification-background .notification .notification-default-action {
+  background: alpha(@surface, 0.94);
+  border: 1px solid alpha(@muted, 0.22);
+  border-left: 3px solid @muted;
+  border-radius: 15px;
+  padding: 0;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+  transition: background 170ms ease, border-color 170ms ease, box-shadow 170ms ease;
+}
+
+.notification-row .notification-background .notification .notification-default-action:hover {
+  background: alpha(@overlay, 0.98);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.48);
+}
+
+.notification-row .notification-background .notification .notification-default-action .notification-content {
+  background: transparent;
+  padding: 12px 12px 12px 14px;
+  border-radius: 15px;
+}
+
+/* --- urgency: normal --- */
+.notification-row .notification-background .notification.normal .notification-default-action {
+  border-left-color: @iris;
+  background: linear-gradient(90deg,
+              alpha(@iris, 0.14) 0%,
+              alpha(@surface, 0.94) 42%);
+}
+
+.notification-row .notification-background .notification.normal .notification-default-action:hover {
+  border-color: alpha(@iris, 0.45);
+  border-left-color: @iris;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.48),
+              0 0 14px alpha(@iris, 0.22);
+}
+
+/* --- urgency: low --- */
+.notification-row .notification-background .notification.low .notification-default-action {
+  border-left-color: @pine;
+  background: linear-gradient(90deg,
+              alpha(@pine, 0.14) 0%,
+              alpha(@surface, 0.94) 42%);
+}
+
+.notification-row .notification-background .notification.low .notification-default-action .notification-content .text-box .summary {
+  color: @foam;
+}
+
+/* --- urgency: critical --- */
+.notification-row .notification-background .notification.critical .notification-default-action {
+  border-left: 3px solid @love;
+  border-color: alpha(@love, 0.42);
+  border-left-color: @love;
+  background: linear-gradient(90deg,
+              alpha(@love, 0.26) 0%,
+              alpha(@surface, 0.95) 52%);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35),
+              0 0 16px alpha(@love, 0.30);
+}
+
+.notification-row .notification-background .notification.critical .notification-default-action .notification-content .text-box .summary {
+  color: @love;
+}
+
+.notification-row .notification-background .notification.critical .notification-default-action .notification-content .text-box .time {
+  color: @love;
+}
+
+/* --- text --- */
+.notification-row .notification-background .notification .notification-default-action .notification-content .text-box .summary {
+  color: @rose;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.notification-row .notification-background .notification .notification-default-action .notification-content .text-box .body {
+  color: @subtle;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.notification-row .notification-background .notification .notification-default-action .notification-content .text-box .time {
+  color: @gold;
+  font-size: 11px;
+  font-weight: 600;
+  margin-right: 4px;
+}
+
+/* --- imagery --- */
+.notification-row .notification-background .notification .notification-default-action .notification-content .image,
+.notification-row .notification-background .notification .notification-default-action .notification-content .body-image {
+  border-radius: 12px;
+  margin-right: 12px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.45);
+}
+
+.notification-row .notification-background .notification .notification-default-action .notification-content .app-icon {
+  color: @iris;
+  margin: 4px;
+}
+
+/* --- inline progress (volume/brightness style notifications) --- */
+.notification-row .notification-background .notification .notification-default-action .notification-content progressbar > trough {
+  background: alpha(@base, 0.9);
+  border: none;
+  border-radius: 999px;
+  min-height: 6px;
+}
+
+.notification-row .notification-background .notification .notification-default-action .notification-content progressbar > trough > progress {
+  background: linear-gradient(90deg, @foam, @iris);
+  border-radius: 999px;
+  min-height: 6px;
+}
+
+/* --- action buttons --- */
+.notification-row .notification-background .notification .notification-action,
+.notification-row .notification-background .notification .notification-action > button {
+  background: alpha(@overlay, 0.95);
+  color: @subtle;
+  border: 1px solid alpha(@muted, 0.2);
+  border-top: none;
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: none;
+  transition: background 150ms ease, color 150ms ease;
+}
+
+.notification-row .notification-background .notification .notification-action:hover,
+.notification-row .notification-background .notification .notification-action > button:hover {
+  background: alpha(@pine, 0.35);
+  color: @foam;
+}
+
+.notification-row .notification-background .notification .notification-action:first-child {
+  border-radius: 0 0 0 15px;
+}
+
+.notification-row .notification-background .notification .notification-action:last-child {
+  border-radius: 0 0 15px 0;
+}
+
+/* --- close --- */
+.close-button {
+  background: alpha(@overlay, 0.92);
+  color: @muted;
+  border: 1px solid alpha(@muted, 0.25);
+  border-radius: 999px;
+  min-width: 22px;
+  min-height: 22px;
+  margin: 8px 8px 0 0;
+  padding: 0;
+  box-shadow: none;
+  transition: background 150ms ease, color 150ms ease, box-shadow 150ms ease;
+}
+
+.close-button:hover {
+  background: alpha(@love, 0.28);
+  color: @love;
+  border-color: alpha(@love, 0.55);
+  box-shadow: 0 0 12px alpha(@love, 0.40);
+}
+
+/* --- grouped notifications --- */
+.notification-group {
+  margin: 2px 0;
+}
+
+.notification-group .notification-group-headers {
+  color: @iris;
+  font-size: 12px;
+  font-weight: 700;
+  margin-left: 16px;
+}
+
+.notification-group .notification-group-icon {
+  color: @iris;
+}
+
+.notification-group.critical .notification-group-headers,
+.notification-group.critical .notification-group-icon {
+  color: @love;
+}
+
+.notification-group .notification-group-buttons > button,
+.notification-group .notification-group-close-button .close-button {
+  background: alpha(@overlay, 0.9);
+  color: @subtle;
+  border-radius: 10px;
+  border: 1px solid alpha(@muted, 0.22);
+  box-shadow: none;
+}
+
+/* --- inline reply --- */
+.inline-reply-entry {
+  background: alpha(@base, 0.95);
+  color: @text;
+  border: 1px solid alpha(@iris, 0.30);
+  border-radius: 10px;
+  padding: 6px 10px;
+  margin: 6px 4px;
+}
+
+.inline-reply-button {
+  background: alpha(@pine, 0.30);
+  color: @foam;
+  border: 1px solid alpha(@foam, 0.28);
+  border-radius: 10px;
+  font-weight: 700;
+  box-shadow: none;
+}
+
+.inline-reply-button:hover {
+  background: alpha(@iris, 0.35);
+  color: @text;
+}
+
+.inline-reply-button:disabled {
+  background: transparent;
+  color: @muted;
+  border-color: alpha(@muted, 0.2);
+}
+
+/* ============================================================
+   Empty state
+   ============================================================ */
+
+.control-center .control-center-list-placeholder {
+  color: alpha(@muted, 0.55);
+  font-size: 15px;
+  font-weight: 600;
+  margin: 40px 0;
+}
+
+/* ============================================================
+   Scrollbar
+   ============================================================ */
+
+scrollbar,
+scrollbar > range > trough {
+  background: transparent;
+  border: none;
+  min-width: 8px;
+}
+
+scrollbar > range > trough > slider {
+  background: alpha(@iris, 0.35);
+  border: none;
+  border-radius: 999px;
+  min-width: 5px;
+  margin: 2px;
+  transition: background 150ms ease;
+}
+
+scrollbar > range > trough > slider:hover {
+  background: alpha(@iris, 0.75);
+}
+
+/* ============================================================
+   Floating toasts — same language as the panel, since these are
+   what actually gets looked at all day
+   ============================================================ */
+
+.floating-notifications .notification-row {
+  margin: 6px 10px;
+}
+
+.floating-notifications .notification-row .notification-background .notification .notification-default-action {
+  background: linear-gradient(150deg,
+              alpha(@overlay, 0.97),
+              alpha(@base, 0.98));
+  border: 1px solid alpha(@iris, 0.26);
+  border-left: 3px solid @iris;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.60);
+}
+
+.floating-notifications .notification-row .notification-background .notification.critical .notification-default-action {
+  border-left-color: @love;
+  border-color: alpha(@love, 0.45);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.60),
+              0 0 20px alpha(@love, 0.35);
+}
+
+.floating-notifications .notification-row .notification-background .notification.low .notification-default-action {
+  border-left-color: @pine;
+}

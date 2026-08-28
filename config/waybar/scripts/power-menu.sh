@@ -1,16 +1,27 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Rose Pine colors (used by wofi css)
+# Colours for the wofi CSS below. ~/.config/matugen/colors.sh is regenerated
+# from the current wallpaper by apply-theme.sh; the Rose Pine values are the
+# fallback for when it is missing.
 BG="#191724"
 FG="#e0def4"
 ACCENT="#d7827e"
 HIGHLIGHT="#31748f"
 
+if [[ -r "$HOME/.config/matugen/colors.sh" ]]; then
+    # shellcheck source=/dev/null
+    . "$HOME/.config/matugen/colors.sh"
+    BG="${BASE:-$BG}"
+    FG="${TEXT:-$FG}"
+    ACCENT="${ROSE:-$ACCENT}"
+    HIGHLIGHT="${PINE:-$HIGHLIGHT}"
+fi
+
 options=$(
 cat <<EOF
 ⏻  Shutdown
-  Reboot
+  Reboot
 ⏾  Suspend
 󰌾  Lock
 󰍃  Logout

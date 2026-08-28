@@ -1,97 +1,201 @@
-local home          = os.getenv("HOME") or "/home/h3bzzz"
-local terminal      = "/usr/bin/ghostty"
-local fileManager   = "dolphin"
--- `hyprlauncher` was never installed, so this bind was dead. Use rofi's drun mode
--- (SUPER+R = app-only launcher, complementing SUPER+A = combined apps/run/windows).
-local menu          = "rofi -show drun -theme ~/.config/rofi/launchers/type-3/style-3.rasi"
-local mainMod       = "SUPER"
-local screenShotDir = home .. "/Pictures/Screenshots"
-local clipHist      = "cliphist list | rofi -dmenu -display-columns 2 -theme ~/.config/rofi/launchers/type-3/style-3.rasi | cliphist decode | wl-copy"
+-- ~/.config/hypr/lua/binds.lua
+-- All keybindings for Rose Pine Hyprland setup
+-- Based on official /usr/share/hypr/hyprland.lua API
 
--- ── Main KeyBinds ────────────────────────────────────────────────
-hl.bind(mainMod .. " + RETURN", hl.dsp.exec_cmd(terminal), { description = "Open Terminal" })
-hl.bind(mainMod .. " + Q", hl.dsp.window.close(), { description = "Close Active Window" })
-hl.bind(mainMod .. " + SHIFT + E", hl.dsp.exec_cmd("command -v uwsm >/dev/null 2>&1 && uwsm stop || command -v hyprshutdown >/dev/null 2>&1 && hyprshutdown || hyprctl dispatch exit"), { description = "Exit Hyprland" })
+local terminal    = "ghostty"
+local fileManager = "thunar"
+local menu        = "~/.config/rofi/launchers/type-3/launcher.sh"
+local mainMod     = "SUPER"
+local home          = os.getenv("HOME") or os.getenv("USERPROFILE") or "."
+local screenshotDir = home .. "/Pictures/screenshots"
 
--- ── App Launchers ────────────────────────────────────────────────
-hl.bind(mainMod .. " + A", hl.dsp.exec_cmd("rofi -show combi -theme ~/.config/rofi/launchers/type-3/style-3.rasi"), { description = "App Launcher" })
-hl.bind(mainMod .. " + E", hl.dsp.exec_cmd(fileManager), { description = "Open File Manager" })
-hl.bind(mainMod .. " + V", hl.dsp.window.float({ action = "toggle" }), { description = "Toggle Floating" })
-hl.bind(mainMod .. " + R", hl.dsp.exec_cmd(menu), { description = "Open Launcher" })
-hl.bind(mainMod .. " + P", hl.dsp.window.pseudo(), { description = "Dwindle pseudotile" })
-hl.bind(mainMod .. " + J", hl.dsp.layout("togglesplit"), { description = "Toggle Split" })
-hl.bind(mainMod .. " + G", hl.dsp.exec_cmd("/usr/bin/google-chrome-stable"), { description = "Open Chrome" })
-hl.bind(mainMod .. " + W", hl.dsp.exec_cmd("~/.config/hypr/scripts/wallpaper-switcher.sh"), { description = "Pick Wallpaper" })
+-- ============================================================
+-- Core binds
+-- ============================================================
 
--- ── Workspace Switching ──────────────────────────────────────────
-for i = 1, 9 do
-	hl.bind(mainMod .. " + " .. i, hl.dsp.focus({ workspace = i }), { description = "Switch to workspace " .. i })
-	hl.bind(mainMod .. " + SHIFT + " .. i, hl.dsp.window.move({ workspace = i }), { description = "Move window to workspace " .. i })
+hl.bind(mainMod .. " + RETURN", hl.dsp.exec_cmd(terminal),                          { description = "Open terminal" })
+hl.bind(mainMod .. " + Q",     hl.dsp.window.close(),                             { description = "Close active window" })
+-- uwsm is not installed and `hyprctl dispatch 'hl.dsp.exit()'` was never a
+-- valid dispatcher string, so the old chained shell command was a no-op.
+-- hl.dsp.exit() is the real dispatcher.
+hl.bind(mainMod .. " + SHIFT + E", hl.dsp.exit(), { description = "Exit Hyprland" })
+
+-- ============================================================
+-- App launchers
+-- ============================================================
+
+hl.bind(mainMod .. " + E", hl.dsp.exec_cmd(fileManager),                          { description = "Open file manager" })
+hl.bind(mainMod .. " + V", hl.dsp.window.float({ action = "toggle" }),            { description = "Toggle floating" })
+hl.bind(mainMod .. " + R", hl.dsp.exec_cmd(menu),                                  { description = "Open launcher (rofi)" })
+-- Quickshell app browser: drops out of the top-left corner under the arch
+-- badge in waybar. Rofi stays on SUPER+R as the fallback.
+hl.bind(mainMod .. " + SPACE", hl.dsp.exec_cmd("qs ipc call launcher toggle 2>/dev/null || " .. menu),      { description = "App browser (quickshell)" })
+hl.bind(mainMod .. " + P", hl.dsp.window.pseudo(),                                 { description = "Dwindle pseudotile" })
+hl.bind(mainMod .. " + SHIFT + J", hl.dsp.layout("togglesplit"),                   { description = "Toggle split" })
+
+hl.bind(mainMod .. " + B", hl.dsp.exec_cmd("/usr/bin/zen-browser"),               { description = "Open Zen browser" })
+hl.bind(mainMod .. " + G", hl.dsp.exec_cmd("/usr/bin/google-chrome-stable"),      { description = "Open Chrome" })
+hl.bind(mainMod .. " + I", hl.dsp.exec_cmd(home .. "/.local/bin/burp"),                  { description = "Open Burp Suite" })
+hl.bind(mainMod .. " + O", hl.dsp.exec_cmd("/usr/bin/caido"),                      { description = "Open Caido" })
+hl.bind(mainMod .. " + A", hl.dsp.exec_cmd("rofi -show window -theme ~/.config/rofi/launchers/type-3/style-3.rasi"), { description = "Window switcher" })
+hl.bind(mainMod .. " + U", hl.dsp.exec_cmd("/usr/bin/cursor"),                     { description = "Open Cursor editor" })
+hl.bind(mainMod .. " + F", hl.dsp.exec_cmd("/usr/bin/firefox"),                    { description = "Open Firefox" })
+hl.bind(mainMod .. " + Y", hl.dsp.exec_cmd("/usr/bin/code"),                       { description = "Open VS Code" })
+
+-- ============================================================
+-- Wallpaper picker (quickshell coverflow)
+-- ============================================================
+
+hl.bind(mainMod .. " + W", hl.dsp.exec_cmd("qs ipc call wallpaper toggle"), { description = "Pick wallpaper (coverflow)" })
+
+-- ============================================================
+-- Screenshots
+-- ============================================================
+
+hl.bind(mainMod .. " + Print",         hl.dsp.exec_cmd("hyprshot -m region -o " .. screenshotDir),      { description = "Screenshot region" })
+hl.bind("Print",                       hl.dsp.exec_cmd("hyprshot -m output -o " .. screenshotDir),      { description = "Screenshot output" })
+hl.bind(mainMod .. " + SHIFT + Print", hl.dsp.exec_cmd("~/.config/hypr/scripts/screenshot-annotate.sh"), { description = "Screenshot + annotate (satty)" })
+hl.bind(mainMod .. " + SHIFT + I",     hl.dsp.exec_cmd("swayimg --gallery"),                            { description = "Open image gallery" })
+
+-- ============================================================
+-- Scratchpad (special workspace)
+-- ============================================================
+
+hl.bind(mainMod .. " + M",         hl.dsp.workspace.toggle_special("magic"),              { description = "Toggle scratchpad" })
+hl.bind(mainMod .. " + SHIFT + M", hl.dsp.window.move({ workspace = "special:magic" }),      { description = "Move to scratchpad" })
+
+-- ============================================================
+-- Session / utilities
+-- ============================================================
+
+hl.bind(mainMod .. " + SHIFT + L", hl.dsp.exec_cmd("pidof hyprlock || hyprlock"),                          { description = "Lock screen" })
+
+-- thornwatch screensaver. CTRL variant starts it on demand without waiting
+-- out the idle timer; SHIFT variant is the escape hatch if the saver window
+-- ever gets stuck focused.
+hl.bind(mainMod .. " + CTRL + ESCAPE",  hl.dsp.exec_cmd("~/.config/hypr/thornwatch/ctl.sh toggle"), { description = "Toggle screensaver" })
+hl.bind(mainMod .. " + SHIFT + ESCAPE", hl.dsp.exec_cmd("~/.config/hypr/thornwatch/ctl.sh stop"),   { description = "Kill screensaver" })
+-- Quickshell session dropdown, top-right under the waybar power button.
+-- SHIFT+ and CTRL+ESCAPE are already taken by the screensaver, so the old
+-- full-screen rofi powermenu lives on the power button's right-click instead.
+hl.bind(mainMod .. " + ESCAPE",    hl.dsp.exec_cmd("qs ipc call power toggle 2>/dev/null || ~/.config/rofi/powermenu/type-4/powermenu.sh"),                             { description = "Session menu (quickshell)" })
+hl.bind(mainMod .. " + N",         hl.dsp.exec_cmd("swaync-client -t -sw"),                                 { description = "Toggle notification panel" })
+hl.bind(mainMod .. " + SHIFT + V", hl.dsp.exec_cmd("~/.config/hypr/scripts/clipboard.sh"),                  { description = "Clipboard history" })
+hl.bind(mainMod .. " + SHIFT + C", hl.dsp.exec_cmd("hyprpicker -a && notify-send 'Color picked' \"$(wl-paste)\""), { description = "Pick color to clipboard" })
+
+-- ============================================================
+-- Focus movement
+-- OFFICIAL API: hl.dsp.focus({ direction = "left" })
+-- ============================================================
+
+hl.bind(mainMod .. " + left",  hl.dsp.focus({ direction = "left" }),  { description = "Focus left" })
+hl.bind(mainMod .. " + right", hl.dsp.focus({ direction = "right" }), { description = "Focus right" })
+hl.bind(mainMod .. " + up",    hl.dsp.focus({ direction = "up" }),    { description = "Focus up" })
+hl.bind(mainMod .. " + down",  hl.dsp.focus({ direction = "down" }),  { description = "Focus down" })
+hl.bind(mainMod .. " + H",     hl.dsp.focus({ direction = "left" }),  { description = "Focus left (vim)" })
+hl.bind(mainMod .. " + L",     hl.dsp.focus({ direction = "right" }), { description = "Focus right (vim)" })
+hl.bind(mainMod .. " + K",     hl.dsp.focus({ direction = "up" }),    { description = "Focus up (vim)" })
+-- SUPER + J was togglesplit, which left vim focus nav missing its down key.
+-- togglesplit moved to SUPER + SHIFT + J.
+hl.bind(mainMod .. " + J",     hl.dsp.focus({ direction = "down" }),  { description = "Focus down (vim)" })
+
+-- ============================================================
+-- Window resize submap
+-- Resize mode mirrors the legacy resize submap.
+-- ============================================================
+
+hl.bind(mainMod .. " + Z", hl.dsp.submap("resize"), { description = "Enter resize mode" })
+
+hl.define_submap("resize", function()
+    hl.bind("right",  hl.dsp.window.resize({ x = 30,  y = 0,   relative = true }), { repeating = true })
+    hl.bind("left",   hl.dsp.window.resize({ x = -30, y = 0,   relative = true }), { repeating = true })
+    hl.bind("up",     hl.dsp.window.resize({ x = 0,   y = -30, relative = true }), { repeating = true })
+    hl.bind("down",   hl.dsp.window.resize({ x = 0,   y = 30,  relative = true }), { repeating = true })
+    hl.bind("L",      hl.dsp.window.resize({ x = 30,  y = 0,   relative = true }), { repeating = true })
+    hl.bind("H",      hl.dsp.window.resize({ x = -30, y = 0,   relative = true }), { repeating = true })
+    hl.bind("K",      hl.dsp.window.resize({ x = 0,   y = -30, relative = true }), { repeating = true })
+    hl.bind("J",      hl.dsp.window.resize({ x = 0,   y = 30,  relative = true }), { repeating = true })
+    hl.bind("escape", hl.dsp.submap("reset"))
+    hl.bind("RETURN", hl.dsp.submap("reset"))
+end)
+
+-- ============================================================
+-- Groups (tabbed windows)
+--
+-- Omarchy puts the group toggle on SUPER + G; that key is already Chrome
+-- here, so the whole cluster shifts to SUPER + SHIFT + G and SUPER + ALT.
+-- ============================================================
+
+hl.bind(mainMod .. " + SHIFT + G", hl.dsp.group.toggle(),                       { description = "Toggle window grouping" })
+hl.bind(mainMod .. " + ALT + G",   hl.dsp.window.move({ out_of_group = true }), { description = "Move window out of group" })
+
+-- Pull a neighbouring window into the group from the given direction.
+hl.bind(mainMod .. " + ALT + left",  hl.dsp.window.move({ into_group = "l" }), { description = "Move window into group on left" })
+hl.bind(mainMod .. " + ALT + right", hl.dsp.window.move({ into_group = "r" }), { description = "Move window into group on right" })
+hl.bind(mainMod .. " + ALT + up",    hl.dsp.window.move({ into_group = "u" }), { description = "Move window into group above" })
+hl.bind(mainMod .. " + ALT + down",  hl.dsp.window.move({ into_group = "d" }), { description = "Move window into group below" })
+
+-- Cycle tabs within the focused group.
+hl.bind(mainMod .. " + ALT + TAB",         hl.dsp.group.next(), { description = "Next window in group" })
+hl.bind(mainMod .. " + ALT + SHIFT + TAB", hl.dsp.group.prev(), { description = "Previous window in group" })
+hl.bind(mainMod .. " + ALT + H",           hl.dsp.group.prev(), { description = "Previous window in group (vim)" })
+hl.bind(mainMod .. " + ALT + L",           hl.dsp.group.next(), { description = "Next window in group (vim)" })
+
+hl.bind(mainMod .. " + ALT + mouse_down", hl.dsp.group.next(), { description = "Next window in group" })
+hl.bind(mainMod .. " + ALT + mouse_up",   hl.dsp.group.prev(), { description = "Previous window in group" })
+
+-- Jump straight to tab N of the focused group.
+for i = 1, 5 do
+    hl.bind(mainMod .. " + ALT + " .. tostring(i), hl.dsp.group.active({ index = i }), { description = "Group tab " .. i })
 end
 
--- ── Move Focus ───────────────────────────────────────────────────
-hl.bind(mainMod .. " + left", hl.dsp.focus({ direction = "left" }), { description = "Move focus left" })
-hl.bind(mainMod .. " + right", hl.dsp.focus({ direction = "right" }), { description = "Move focus right" })
-hl.bind(mainMod .. " + up", hl.dsp.focus({ direction = "up" }), { description = "Move focus up" })
-hl.bind(mainMod .. " + down", hl.dsp.focus({ direction = "down" }), { description = "Move focus down" })
+-- ============================================================
+-- Workspaces
+-- OFFICIAL API: hl.dsp.focus({ workspace = i })
+-- ============================================================
 
--- ── Move Window ──────────────────────────────────────────────────
-hl.bind(mainMod .. " + SHIFT + left", hl.dsp.window.move({ direction = "left" }), { description = "Move window left" })
-hl.bind(mainMod .. " + SHIFT + right", hl.dsp.window.move({ direction = "right" }), { description = "Move window right" })
-hl.bind(mainMod .. " + SHIFT + up", hl.dsp.window.move({ direction = "up" }), { description = "Move window up" })
-hl.bind(mainMod .. " + SHIFT + down", hl.dsp.window.move({ direction = "down" }), { description = "Move window down" })
+for i = 1, 10 do
+    local key = (i == 10) and "0" or tostring(i)
 
--- ── Scroll Through Workspaces ────────────────────────────────────
-hl.bind(mainMod .. " + mouse_down", hl.dsp.focus({ workspace = "e+1" }), { mouse = true, description = "Next workspace" })
-hl.bind(mainMod .. " + mouse_up", hl.dsp.focus({ workspace = "e-1" }), { mouse = true, description = "Previous workspace" })
+    hl.bind(mainMod .. " + " .. key,         hl.dsp.focus({ workspace = i }),        { description = "Workspace " .. i })
+    hl.bind(mainMod .. " + SHIFT + " .. key, hl.dsp.window.move({ workspace = i }),   { description = "Move to workspace " .. i })
+end
 
--- ── Special Workspace ────────────────────────────────────────────
-hl.bind(mainMod .. " + S", hl.dsp.workspace.toggle_special(), { description = "Toggle special workspace" })
-hl.bind(mainMod .. " + SHIFT + S", hl.dsp.exec_cmd(os.getenv("HOME") .. "/.config/hypr/screensaver/start-screensaver.sh"), { description = "Start screensaver test" })
+-- ============================================================
+-- Mouse workspace scroll
+-- ============================================================
 
--- ── Lock Screen ──────────────────────────────────────────────────
-hl.bind(mainMod .. " + L", hl.dsp.exec_cmd("hyprlock"), { description = "Lock screen" })
+hl.bind(mainMod .. " + mouse_down", hl.dsp.focus({ workspace = "e+1" }), { description = "Next workspace" })
+hl.bind(mainMod .. " + mouse_up",   hl.dsp.focus({ workspace = "e-1" }), { description = "Previous workspace" })
 
--- ── Mouse Move/Resize ────────────────────────────────────────────
-hl.bind(mainMod .. " + mouse:272", hl.dsp.window.drag(), { mouse = true, description = "Move Window" })
-hl.bind(mainMod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true, description = "Resize Window" })
+-- ============================================================
+-- Mouse move/resize
+-- OFFICIAL API: hl.dsp.window.drag() / hl.dsp.window.resize()
+-- Must pass { mouse = true } for mouse binds
+-- ============================================================
 
--- ── Window State ─────────────────────────────────────────────────
-hl.bind(mainMod .. " + F", hl.dsp.window.fullscreen({ action = "toggle" }), { description = "Toggle fullscreen" })
-hl.bind(mainMod .. " + SHIFT + F", hl.dsp.window.fullscreen({ mode = "maximized", action = "toggle" }), { description = "Toggle maximized" })
-hl.bind(mainMod .. " + T", hl.dsp.window.pin({ action = "toggle" }), { description = "Pin floating window (all workspaces)" })
-hl.bind(mainMod .. " + K", hl.dsp.group.toggle(), { description = "Toggle window group (tabbed)" })
+hl.bind(mainMod .. " + mouse:272", hl.dsp.window.drag(),   { mouse = true, description = "Move window" })
+hl.bind(mainMod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true, description = "Resize window" })
 
--- ── Keyboard Resize (SUPER+CTRL+arrows) ──────────────────────────
-hl.bind(mainMod .. " + CTRL + left",  hl.dsp.exec_cmd("hyprctl dispatch resizeactive -60 0"),  { description = "Shrink width" })
-hl.bind(mainMod .. " + CTRL + right", hl.dsp.exec_cmd("hyprctl dispatch resizeactive 60 0"),   { description = "Grow width" })
-hl.bind(mainMod .. " + CTRL + up",    hl.dsp.exec_cmd("hyprctl dispatch resizeactive 0 -60"),  { description = "Shrink height" })
-hl.bind(mainMod .. " + CTRL + down",  hl.dsp.exec_cmd("hyprctl dispatch resizeactive 0 60"),   { description = "Grow height" })
+-- ============================================================
+-- Media / hardware keys
+-- locked=true -> works even when lockscreen/input inhibitor is active
+-- repeating=true -> repeats while held
+-- ============================================================
 
--- ── Screenshots (hyprshot → ~/Pictures/Screenshots + clipboard) ──
-hl.bind("Print",           hl.dsp.exec_cmd("hyprshot -m region --freeze -o " .. screenShotDir), { description = "Screenshot region" })
-hl.bind("SHIFT + Print",   hl.dsp.exec_cmd("hyprshot -m window --freeze -o " .. screenShotDir), { description = "Screenshot window" })
-hl.bind("CTRL + Print",    hl.dsp.exec_cmd("hyprshot -m output -o " .. screenShotDir),          { description = "Screenshot monitor" })
-hl.bind(mainMod .. " + Print", hl.dsp.exec_cmd("hyprshot -m region --freeze --clipboard-only"),{ description = "Screenshot region → clipboard only" })
--- Capture a region then open satty to annotate (arrows/boxes/blur) → clipboard + saved
-hl.bind("ALT + Print", hl.dsp.exec_cmd("grim -g \"$(slurp)\" - | satty --filename - --output-filename " .. screenShotDir .. "/satty-$(date +%Y%m%d-%H%M%S).png --copy-command wl-copy --early-exit"), { description = "Screenshot region → annotate (satty)" })
+hl.bind("XF86AudioRaiseVolume",  hl.dsp.exec_cmd("~/.config/hypr/scripts/volume.sh up"),     { locked = true, repeating = true, description = "Volume up" })
+hl.bind("XF86AudioLowerVolume",  hl.dsp.exec_cmd("~/.config/hypr/scripts/volume.sh down"),   { locked = true, repeating = true, description = "Volume down" })
+hl.bind("XF86AudioMute",         hl.dsp.exec_cmd("~/.config/hypr/scripts/volume.sh mute"),   { locked = true, description = "Mute" })
+hl.bind("XF86AudioMicMute",      hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"),         { locked = true, description = "Mic mute" })
+hl.bind("XF86MonBrightnessUp",    hl.dsp.exec_cmd("~/.config/hypr/scripts/brightness.sh up"),   { locked = true, repeating = true, description = "Brightness up" })
+hl.bind("XF86MonBrightnessDown",  hl.dsp.exec_cmd("~/.config/hypr/scripts/brightness.sh down"), { locked = true, repeating = true, description = "Brightness down" })
+hl.bind("XF86AudioNext",         hl.dsp.exec_cmd("playerctl next"),                                   { locked = true, description = "Next track" })
+hl.bind("XF86AudioPause",        hl.dsp.exec_cmd("playerctl play-pause"),                             { locked = true, description = "Play/pause" })
+hl.bind("XF86AudioPlay",         hl.dsp.exec_cmd("playerctl play-pause"),                             { locked = true, description = "Play/pause" })
+hl.bind("XF86AudioPrev",         hl.dsp.exec_cmd("playerctl previous"),                               { locked = true, description = "Previous track" })
 
--- ── Color Picker (hyprpicker → hex to clipboard) ─────────────────
-hl.bind(mainMod .. " + SHIFT + C", hl.dsp.exec_cmd("hyprpicker -a -f hex"), { description = "Pick color → clipboard (hex)" })
+-- ============================================================
+-- Daily Bible verse widget
+-- ============================================================
 
--- ── OCR a region → clipboard (tesseract) ─────────────────────────
-hl.bind("ALT + SHIFT + Print", hl.dsp.exec_cmd("grim -g \"$(slurp)\" - | tesseract - - 2>/dev/null | wl-copy && notify-send 'OCR' 'Text copied to clipboard'"), { description = "OCR region → clipboard" })
-
--- ── Clipboard History (cliphist + rofi) ──────────────────────────
-hl.bind(mainMod .. " + SHIFT + V", hl.dsp.exec_cmd(clipHist), { description = "Clipboard history picker" })
-
--- ── Volume / Mic (WirePlumber) — locked so they work on lockscreen ─
-hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ 5%+"), { locked = true, repeating = true, description = "Volume up" })
-hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"),        { locked = true, repeating = true, description = "Volume down" })
-hl.bind("XF86AudioMute",        hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"),       { locked = true, description = "Mute output" })
-hl.bind("XF86AudioMicMute",     hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"),     { locked = true, description = "Mute mic" })
-
--- ── Media (playerctl) ────────────────────────────────────────────
-hl.bind("XF86AudioPlay", hl.dsp.exec_cmd("playerctl play-pause"), { locked = true, description = "Play/Pause" })
-hl.bind("XF86AudioNext", hl.dsp.exec_cmd("playerctl next"),       { locked = true, description = "Next track" })
-hl.bind("XF86AudioPrev", hl.dsp.exec_cmd("playerctl previous"),   { locked = true, description = "Previous track" })
+hl.bind(mainMod .. " + SHIFT + W", hl.dsp.exec_cmd("~/.local/bin/daily-verse"), { description = "Show verse of the day" })

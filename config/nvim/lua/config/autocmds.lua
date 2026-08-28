@@ -6,3 +6,12 @@
 --
 -- Or remove existing autocmds by their group name (which is prefixed with `lazyvim_` for the defaults)
 -- e.g. vim.api.nvim_del_augroup_by_name("lazyvim_wrap_spell")
+
+-- Ensure transparency is applied after colorscheme loads
+vim.api.nvim_create_autocmd("UIEnter", {
+  once = true,
+  callback = function()
+    -- Trigger the transparency autocmd manually on startup
+    vim.cmd("doautocmd ColorScheme")
+  end,
+})

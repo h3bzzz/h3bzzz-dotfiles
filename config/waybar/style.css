@@ -1,29 +1,58 @@
-@define-color base #191724;
-@define-color surface #1f1d2e;
-@define-color overlay #26233a;
-@define-color muted #6e6a86;
-@define-color subtle #908caa;
-@define-color text #e0def4;
-@define-color love #eb6f92;
-@define-color gold #f6c177;
-@define-color rose #ebbcba;
-@define-color pine #31748f;
-@define-color foam #9ccfd8;
-@define-color iris #c4a7e7;
+/* Palette lives in colors.css, regenerated from the wallpaper by
+   ~/.config/hypr/scripts/apply-theme.sh. GTK requires @import before any
+   other rule, so this stays the first line of the file. */
+@import url("colors.css");
 
 * {
-  font-family: "JetBrainsMono Nerd Font";
+  font-family: "JetBrainsMono Nerd Font", "Noto Sans CJK KR", "Noto Sans CJK JP", "Noto Sans CJK SC", "Symbols Nerd Font", "Noto Color Emoji", sans-serif;
   font-size: 12px;
   font-weight: 600;
 }
 
 window#waybar {
-  background-color: rgba(25, 23, 36, 0.88);
+  background-color: alpha(@base, 0.88);
   border-radius: 10px;
   color: @text;
   padding-right: 6px;
-  border: 1px solid rgba(110, 106, 134, 0.15);  /* subtle border for depth */
+  border: 1px solid alpha(@muted, 0.15);  /* subtle border for depth */
   margin-top: -2px;
+}
+
+/* =======================
+   Arch application menu
+   ======================= */
+
+#custom-arch {
+  padding: 0 13px;
+  margin-left: 2px;
+  margin-right: 6px;
+  border-radius: 10px;
+  font-size: 16px;
+  color: @foam;
+  background: linear-gradient(
+    135deg,
+    alpha(@foam, 0.22),
+    alpha(@pine, 0.18)
+  );
+  text-shadow: 0 0 8px alpha(@foam, 0.55);
+  animation: arch-breathe 4.5s ease-in-out infinite;
+  transition: all 0.2s ease;
+}
+
+@keyframes arch-breathe {
+  0%   { box-shadow: 0 0 5px alpha(@foam, 0.20); }
+  50%  { box-shadow: 0 0 12px alpha(@foam, 0.50); }
+  100% { box-shadow: 0 0 5px alpha(@foam, 0.20); }
+}
+
+#custom-arch:hover {
+  background: linear-gradient(
+    135deg,
+    alpha(@foam, 0.45),
+    alpha(@iris, 0.30)
+  );
+  color: @text;
+  text-shadow: 0 0 12px alpha(@foam, 0.90);
 }
 
 /* =======================
@@ -34,24 +63,36 @@ window#waybar {
   padding: 0 10px;
   margin: 0 2px;
   border-radius: 8px;
-  background-color: rgba(49, 116, 143, 0.10);
+  background-color: alpha(@pine, 0.10);
   color: @muted;
   transition: all 0.2s ease;
 }
 
 #workspaces button.active {
-  background-color: rgba(49, 116, 143, 0.35);
+  background: linear-gradient(
+    135deg,
+    alpha(@pine, 0.45),
+    alpha(@iris, 0.32)
+  );
   color: @text;
   font-weight: 700;
+  box-shadow: 0 0 8px alpha(@foam, 0.45);
+  animation: ws-pulse 2.6s ease-in-out infinite;
+}
+
+@keyframes ws-pulse {
+  0%   { box-shadow: 0 0 6px alpha(@foam, 0.30); }
+  50%  { box-shadow: 0 0 13px alpha(@foam, 0.60); }
+  100% { box-shadow: 0 0 6px alpha(@foam, 0.30); }
 }
 
 #workspaces button:hover {
-  background-color: rgba(196, 167, 231, 0.18);
+  background-color: alpha(@iris, 0.18);
   color: @iris;
 }
 
 #workspaces button.urgent {
-  background-color: rgba(235, 111, 146, 0.25);
+  background-color: alpha(@love, 0.25);
   color: @love;
 }
 
@@ -64,30 +105,29 @@ window#waybar {
   padding: 0 10px;
   margin: 0 2px;
   border-radius: 8px;
-  background-color: rgba(110, 106, 134, 0.10);
+  background-color: alpha(@muted, 0.10);
   color: @subtle;
   transition: all 0.2s ease;
 }
 
 #taskbar button:hover {
-  background-color: rgba(196, 167, 231, 0.18);
+  background-color: alpha(@iris, 0.18);
   color: @iris;
   box-shadow: none;
 }
 
 #taskbar button.active {
-  background-color: rgba(49, 116, 143, 0.30);
+  background-color: alpha(@pine, 0.30);
   color: @text;
 }
 
 #taskbar button.minimized {
-
-  background-color: rgba(110, 106, 134, 0.18);
+  background-color: alpha(@muted, 0.18);
   color: @muted;
 }
 
 #taskbar button.urgent {
-  background-color: rgba(235, 111, 146, 0.22);
+  background-color: alpha(@love, 0.22);
   color: @love;
 }
 
@@ -100,7 +140,7 @@ window#waybar {
   padding: 0 10px;
   margin: 0 2px;
   border-radius: 8px;
-  background-color: rgba(110, 106, 134, 0.10);
+  background-color: alpha(@muted, 0.10);
   font-weight: 500;
   font-style: italic;
 }
@@ -123,8 +163,12 @@ window#waybar {
   padding: 0 12px;
   margin: 0 2px;
   border-radius: 8px;
-  background-color: rgba(49, 116, 143, 0.12);
-  transition: background-color 0.2s ease;
+  background: linear-gradient(
+    135deg,
+    alpha(@pine, 0.18),
+    alpha(@iris, 0.10)
+  );
+  transition: all 0.2s ease;
 }
 
 /* Subtle hover glow on all modules */
@@ -138,7 +182,12 @@ window#waybar {
 #backlight:hover,
 #mpris:hover,
 #custom-notification:hover {
-  background-color: rgba(49, 116, 143, 0.25);
+  background: linear-gradient(
+    135deg,
+    alpha(@pine, 0.32),
+    alpha(@iris, 0.22)
+  );
+  box-shadow: 0 0 6px alpha(@iris, 0.25);
 }
 
 /* =======================
@@ -159,7 +208,7 @@ window#waybar {
 
 #temperature.critical {
   color: @love;
-  background-color: rgba(235, 111, 146, 0.16);
+  background-color: alpha(@love, 0.16);
 }
 
 #network {
@@ -168,7 +217,7 @@ window#waybar {
 
 #network.disconnected {
   color: @love;  /* love */
-  background-color: rgba(235, 111, 146, 0.12);
+  background-color: alpha(@love, 0.12);
 }
 
 #bluetooth {
@@ -213,7 +262,7 @@ window#waybar {
 }
 
 #battery.critical:not(.charging) {
-  background-color: rgba(235, 111, 146, 0.3);
+  background-color: alpha(@love, 0.3);
   color: @love;
   animation: blink 0.5s linear infinite;
 }
@@ -228,7 +277,7 @@ window#waybar {
 
 #mpris {
   color: @iris;  /* iris */
-  background-color: rgba(196, 167, 231, 0.10);
+  background-color: alpha(@iris, 0.10);
   font-style: italic;
   min-width: 180px;
 }
@@ -248,6 +297,7 @@ window#waybar {
   margin: 0;
   background-color: transparent;
   letter-spacing: 1.5px;
+  text-shadow: 0 0 6px alpha(@iris, 0.55);  /* neon glow on peaks */
   transition: opacity 0.3s ease;
 }
 
@@ -259,24 +309,13 @@ window#waybar {
   padding-left: 6px;
 }
 
-#custom-cava-wide {
-  font-size: 12px;
-  padding: 0;
-  margin: 0;
-  background-color: transparent;
-  letter-spacing: 1px;
-  transition: opacity 0.3s ease;
-}
-
 #custom-cava-left.idle,
-#custom-cava-right.idle,
-#custom-cava-wide.idle {
+#custom-cava-right.idle {
   opacity: 0.35;
 }
 
 #custom-cava-left.active,
-#custom-cava-right.active,
-#custom-cava-wide.active {
+#custom-cava-right.active {
   opacity: 1;
 }
 
@@ -287,24 +326,44 @@ window#waybar {
 
 #custom-notification.none {
   color: @subtle;
-  background-color: rgba(110, 106, 134, 0.12);
+  background-color: alpha(@muted, 0.12);
 }
 
+/* Something is waiting: love glow + slow pulse, the same visual grammar the
+   arch badge uses on the other end of the bar. */
 #custom-notification.notification,
 #custom-notification.inhibited-notification {
   color: @love;
+  background: linear-gradient(
+    135deg,
+    alpha(@love, 0.28),
+    alpha(@iris, 0.16)
+  );
+  text-shadow: 0 0 8px alpha(@love, 0.65);
+  animation: bell-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes bell-pulse {
+  0%   { box-shadow: 0 0 5px alpha(@love, 0.25); }
+  50%  { box-shadow: 0 0 14px alpha(@love, 0.60); }
+  100% { box-shadow: 0 0 5px alpha(@love, 0.25); }
+}
+
+#custom-notification:hover {
+  color: @text;
+  text-shadow: 0 0 12px alpha(@iris, 0.85);
 }
 
 #custom-notification.dnd-none,
 #custom-notification.dnd-inhibited-none {
   color: @gold;
-  background-color: rgba(246, 193, 119, 0.12);
+  background-color: alpha(@gold, 0.12);
 }
 
 #custom-notification.dnd-notification,
 #custom-notification.dnd-inhibited-notification {
   color: @gold;
-  background-color: rgba(246, 193, 119, 0.18);
+  background-color: alpha(@gold, 0.18);
 }
 
 /* =======================
@@ -312,12 +371,19 @@ window#waybar {
    ======================= */
 
 #clock {
-  padding: 0 8px;
+  padding: 0 12px;
   font-weight: 700;
   font-size: 16px;
   color: @text;
   letter-spacing: 0.08em;
-  background-color: transparent;
+  background: linear-gradient(
+    180deg,
+    alpha(@overlay, 0.0),
+    alpha(@overlay, 0.55)
+  );
+  border-radius: 8px;
+  border-bottom: 2px solid alpha(@gold, 0.75);  /* gold accent underline */
+  text-shadow: 0 0 8px alpha(@text, 0.35);
 }
 
 /* =======================
@@ -328,7 +394,7 @@ window#waybar {
   padding: 0 12px;
   margin: 0 2px;
   border-radius: 8px;
-  background-color: rgba(110, 106, 134, 0.12);
+  background-color: alpha(@muted, 0.12);
 }
 
 #tray > .passive {
@@ -337,8 +403,7 @@ window#waybar {
 
 #tray > .needs-attention {
   -gtk-icon-effect: highlight;
-  background-color: rgba(246, 193, 119, 0.2);
-
+  background-color: alpha(@gold, 0.2);
 }
 
 /* =======================
@@ -352,8 +417,8 @@ window#waybar {
   border-radius: 10px;
   background: linear-gradient(
     135deg,
-    rgba(235, 111, 146, 0.2),
-    rgba(49, 116, 143, 0.2)
+    alpha(@love, 0.2),
+    alpha(@pine, 0.2)
   );
   color: @love;
   font-size: 15px;
@@ -363,8 +428,8 @@ window#waybar {
 #custom-power:hover {
   background: linear-gradient(
     135deg,
-    rgba(235, 111, 146, 0.45),
-    rgba(49, 116, 143, 0.45)
+    alpha(@love, 0.45),
+    alpha(@pine, 0.45)
   );
   color: @text;
 }
@@ -374,8 +439,8 @@ window#waybar {
    ======================= */
 
 tooltip {
-  background-color: rgba(25, 23, 36, 0.95);
-  border: 1px solid rgba(110, 106, 134, 0.3);
+  background-color: alpha(@base, 0.95);
+  border: 1px solid alpha(@muted, 0.3);
   border-radius: 8px;
   color: @text;
 }
@@ -385,9 +450,8 @@ tooltip label {
 }
 
 #clock .calendar-day.today {
-  background-color: rgba(246, 193, 119, 0.35);
+  background-color: alpha(@gold, 0.35);
   color: @gold;
   font-weight: 700;
   border-radius: 4px;
 }
-

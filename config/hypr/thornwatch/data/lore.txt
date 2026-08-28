@@ -1,0 +1,213 @@
+# thornwatch lore deck
+# One card per record, records separated by a line containing only %%.
+# First line of a record is the title, the rest is the body. Add your own --
+# the panel picks uniformly at random, so anything you drop in here shows up.
+%%
+IDOR
+Authorisation is not authentication.
+A valid session that reaches another tenant's object
+is the whole bug. Swap the id, keep the cookie.
+%%
+SSRF · CLOUD METADATA
+169.254.169.254 is the classic. So are:
+  metadata.google.internal
+  169.254.170.2   (ECS task role)
+  100.100.100.200 (Alibaba)
+IMDSv2 needs a PUT for the token, so a GET-only
+SSRF stops at v1-enabled hosts.
+%%
+SSRF · PARSER CONFUSION
+http://127.0.0.1#@evil.com/
+http://evil.com@127.0.0.1/
+http://127.1/  http://0/  http://[::]/
+http://0x7f.0.0.1/  http://2130706433/
+The allowlist and the HTTP client rarely parse
+a URL the same way. That gap is the bug.
+%%
+JWT
+alg:none. RS256 downgraded to HS256 with the public
+key as the HMAC secret. kid as a path traversal.
+jku and x5u pointing at your own host.
+Signature verification that is called but never checked.
+%%
+PROTOTYPE POLLUTION
+__proto__, constructor.prototype, and the fact that
+JSON.parse happily produces the key "__proto__".
+Pollution is only half of it -- you still need a
+gadget that reads the polluted property and reaches
+a sink. Find the gadget first, then the sink.
+%%
+RACE CONDITION
+Single-packet attack: HTTP/2, all requests in one
+TCP segment, last byte withheld until the end.
+Anywhere a check and a write are not one transaction:
+coupon redemption, balance transfer, invite acceptance,
+2FA verification, rate limit counters.
+%%
+ZIG · ALLOCATORS ARE EXPLICIT
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    defer _ = gpa.deinit();
+    const allocator = gpa.allocator();
+No hidden allocation anywhere in the language.
+If a function allocates, it takes an Allocator.
+%%
+ZIG · ERRORS ARE VALUES
+    const file = std.fs.cwd().openFile(path, .{}) catch |err| switch (err) {
+        error.FileNotFound => return default,
+        else => return err,
+    };
+try is sugar for `catch |e| return e`.
+errdefer runs only on the error path.
+%%
+ZIG · COMPTIME
+Types are values at comptime. Generics are just
+functions that take and return a type:
+    fn List(comptime T: type) type {
+        return struct { items: []T, len: usize };
+    }
+%%
+RUST · THE THREE RULES
+One mutable borrow, or many shared borrows. Never both.
+A reference must never outlive its referent.
+Every value has exactly one owner.
+Everything else in the language falls out of these.
+%%
+HTTP REQUEST SMUGGLING
+CL.TE: front end reads Content-Length, back end reads
+Transfer-Encoding. TE.CL is the mirror. H2.CL appears
+when HTTP/2 is downgraded to HTTP/1.1 at the origin.
+Confirm with a timing delay before you claim it.
+Never test with a payload that poisons a shared cache.
+%%
+OAUTH
+redirect_uri matched by prefix instead of exact string.
+state missing, so the callback is CSRF-able.
+Authorisation code replayed because it was never
+single-use. A subdomain takeover on a registered
+redirect host hands over every code.
+%%
+CORS
+Access-Control-Allow-Origin reflecting the Origin header
+plus Allow-Credentials: true is a full read primitive.
+Origin: null passes more validators than you would
+expect -- sandboxed iframes send it for free.
+%%
+CSP
+'unsafe-inline' with a nonce present means the nonce wins
+in CSP3 and unsafe-inline is ignored. In CSP2 it is not.
+Look for JSONP endpoints and Angular on an allowlisted
+CDN -- both turn a strict policy into a bypass.
+%%
+TLS
+The certificate proves identity. It proves nothing about
+what the server does with your data. Certificate
+transparency logs are free subdomain enumeration:
+    crt.sh/?q=%25.target.com&output=json
+%%
+DNS
+A CNAME pointing at a deprovisioned service is a
+takeover. Wildcard records make subdomain enumeration
+lie to you -- always resolve a random label first and
+throw the whole wordlist out if it answers.
+%%
+GRAPHQL
+Introspection off is not access control. Field
+suggestions in error messages rebuild the schema.
+Aliases turn one request into a thousand, which
+defeats most rate limits. node(id:) is an IDOR
+speedrun on every Relay-style API.
+%%
+THE SEVEN QUESTION GATE
+Can you prove impact, not just behaviour?
+Whose data crosses a boundary?
+Would the vendor pay to stop it?
+Can a stranger do it, or only an admin?
+Does it need a victim to act?
+Is it already in scope and already known?
+Can you demonstrate it twice in a row?
+%%
+LINUX · /proc IS AN API
+/proc/self/environ    process environment
+/proc/self/cmdline    argv
+/proc/self/cwd        symlink to working directory
+/proc/self/fd/N       every open file, including deleted ones
+A path traversal that reaches /proc is a lot more
+than a file read.
+%%
+SIGNALS
+SIGTERM asks. SIGKILL takes. SIGHUP historically meant
+the terminal went away, which is why daemons reuse it
+for "reload your config".
+A process that ignores SIGTERM and gets SIGKILLed
+never runs its cleanup handlers.
+%%
+POSTMESSAGE
+An event listener that never checks event.origin is a
+cross-origin write into the page. Then look at what it
+does with event.data: innerHTML, eval, location, or a
+token handed to a message that anyone can send.
+%%
+CACHE POISONING
+Unkeyed input is the whole game: X-Forwarded-Host,
+X-Original-URL, a header the origin reflects but the
+cache key ignores. Find the discrepancy with a cache
+buster, then decide whether the impact is worth
+poisoning a real key. Usually it is not -- report it
+on your own buster and describe the reach.
+%%
+FILE UPLOAD
+Content-Type is a hint from the attacker.
+Magic bytes plus a re-encode is the only real check.
+Watch for: .php.jpg, .phtml, .svg with script,
+path traversal in the filename, zip slip on extract,
+and an image parser that shells out to ImageMagick.
+%%
+XXE
+    <!DOCTYPE r [<!ENTITY x SYSTEM "file:///etc/passwd">]>
+Out-of-band via a parameter entity in an external DTD
+when the response body is not reflected. SVG, DOCX,
+XLSX and SOAP are all XML wearing a costume.
+%%
+BUSINESS LOGIC
+No scanner finds these. Negative quantities. Currency
+mismatch between the price lookup and the charge.
+A discount applied twice by replaying one step.
+State machines that accept step 3 without step 2.
+Read the flow like a developer who was in a hurry.
+%%
+NOTICE, DO NOT SEARCH
+You do not find bugs by running more tools.
+You find them by noticing that something responded
+slightly differently than it should have, and then
+refusing to let it go.
+%%
+THE DEVELOPER WAS TIRED
+Every vulnerability is a person under deadline making
+a reasonable-looking decision. Ask what was easy to
+write, what was hard to test, and what got added last.
+%%
+SCOPE IS A CONTRACT
+Out of scope means out of scope even when the bug is
+beautiful. Authorised testing is the only kind that
+protects you. Write the target down before you type
+the first request.
+%%
+REPORT LIKE A COLLEAGUE
+State the impact in the first sentence.
+Give steps that reproduce on a clean account.
+Redact the other person's data, keep your own.
+Say what you did not test. Never inflate severity --
+the triager remembers.
+%%
+HYPRLAND
+hyprctl clients -j is the entire window state as JSON.
+hyprctl dispatch takes a lua expression on 0.55+.
+Window rules match on class, title, tag and workspace,
+and evaluate in declaration order.
+%%
+TERMINALTEXTEFFECTS
+Every effect reads plain text on stdin and writes ANSI
+to stdout. Canvas 0 means "match the terminal", -1
+means "match the input". Anchor the canvas and the
+text separately -- that is how you centre anything.
+%%

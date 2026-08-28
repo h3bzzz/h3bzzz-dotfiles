@@ -1,12 +1,35 @@
-# OS
-.DS_Store
-Thumbs.db
+# ── Machine-local secrets ────────────────────────────────────────────────
+# API keys and anything else that must never leave this machine. .zshrc
+# sources this file when it exists. Never remove this rule.
+config/zsh/secrets.zsh
+*.secret
+.env
 
-# Editor
-*.swp
-*.swo
+# ── Generated palette ────────────────────────────────────────────────────
+# matugen rewrites these on every wallpaper change. They are build output,
+# not source -- the source is config/matugen/templates/. Tracking them would
+# mean a commit every time the wallpaper changes.
+# install.sh (and config/hypr/scripts/apply-theme.sh) regenerate the whole set.
+config/waybar/colors.css
+config/swaync/colors.css
+config/rofi/launchers/type-3/shared/colors.rasi
+config/hypr/lua/colors.lua
+config/hypr/colors.conf
+config/quickshell/Colors.qml
+config/ghostty/themes/matugen
+config/btop/themes/matugen.theme
+config/matugen/colors.sh
+config/matugen/colors.json
 
-# Hyprland dynamic state (regenerated on wallpaper change)
+# ── Live state ───────────────────────────────────────────────────────────
 config/hypr/current-wallpaper
 
-
+# ── Caches and scratch ───────────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.bak
+*.premigration
+*.swp
+*.swo
+.DS_Store
+Thumbs.db

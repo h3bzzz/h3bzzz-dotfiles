@@ -1,0 +1,64 @@
+# ── matugen: wallpaper → whole-desktop theme ────────────────────────────
+# Every consumer in this rice speaks Rose Pine slot names
+# (base/surface/overlay/muted/subtle/text + love/gold/rose/pine/foam/iris).
+# So rather than rewriting eight stylesheets into Material You vocabulary,
+# matugen refills those same twelve slots from the wallpaper.
+#
+# Structural slots (base/surface/overlay/muted/subtle/text) come straight from
+# the Material tonal surfaces. The six accents are derived separately -- see
+# the note below.
+
+[config]
+reload_apps = false
+set_wallpaper = false
+
+# Accents are NOT declared here. matugen's `blend` harmonises hue but also
+# normalises tone, which flattened this rice -- `pine` is a dark selection
+# background and love/gold/rose are three distinct mid-tones, and blending
+# pushed all four into the same near-white band. theme-accents.py derives them
+# instead and apply-theme.sh feeds them in via --import-json-string, so
+# templates read them as {{accent.<name>.hex}}.
+
+# ── templates ───────────────────────────────────────────────────────────
+[templates.waybar]
+input_path  = '~/.config/matugen/templates/waybar-colors.css'
+output_path = '~/.config/waybar/colors.css'
+
+[templates.swaync]
+input_path  = '~/.config/matugen/templates/swaync-colors.css'
+output_path = '~/.config/swaync/colors.css'
+
+[templates.rofi]
+input_path  = '~/.config/matugen/templates/rofi-colors.rasi'
+output_path = '~/.config/rofi/launchers/type-3/shared/colors.rasi'
+
+[templates.hyprland]
+input_path  = '~/.config/matugen/templates/hypr-colors.lua'
+output_path = '~/.config/hypr/lua/colors.lua'
+
+[templates.hyprlock]
+input_path  = '~/.config/matugen/templates/hyprlock-colors.conf'
+output_path = '~/.config/hypr/colors.conf'
+
+[templates.quickshell]
+input_path  = '~/.config/matugen/templates/quickshell-Colors.qml'
+output_path = '~/.config/quickshell/Colors.qml'
+
+[templates.ghostty]
+input_path  = '~/.config/matugen/templates/ghostty-theme'
+output_path = '~/.config/ghostty/themes/matugen'
+
+[templates.btop]
+input_path  = '~/.config/matugen/templates/btop.theme'
+output_path = '~/.config/btop/themes/matugen.theme'
+
+[templates.shell]
+input_path  = '~/.config/matugen/templates/colors.sh'
+output_path = '~/.config/matugen/colors.sh'
+
+# Same palette as colors.sh, for the consumers that are scripts rather than
+# stylesheets -- the waybar cava modules read it at start-up, and waybar
+# restarts them on every SIGUSR2 reload.
+[templates.json]
+input_path  = '~/.config/matugen/templates/colors.json'
+output_path = '~/.config/matugen/colors.json'

@@ -1,6 +1,6 @@
 * {
-	font: "JetBrainsMono Nerd Font 12";
-	prompt-font: "JetBrainsMono Nerd Font Bold 18";
-	message-font: "JetBrainsMono Nerd Font 12";
-	element-text-font: "JetBrainsMono Nerd Font Bold 20";
+    font:              "JetBrainsMono Nerd Font 12";
+    prompt-font:       "JetBrainsMono Nerd Font Bold 18";
+    message-font:      "JetBrainsMono Nerd Font 12";
+    element-text-font: "JetBrainsMono Nerd Font Bold 20";
 }
