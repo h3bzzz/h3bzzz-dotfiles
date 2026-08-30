@@ -81,9 +81,16 @@ zstyle ':omz:plugins:nvm' lazy yes
 zstyle ':omz:plugins:nvm' lazy-cmd node npm npx yarn pnpm pn bun vite tsc eslint prettier next
 zstyle ':omz:plugins:nvm' silent-autoload yes
 
-# eza aliases (ls/ll/la/tree). Icons and git status on, directories first.
+# eza aliases (ls/ll/la/tree). Directories first, icons on.
+#
+# git-status is deliberately OFF. $HOME is itself a git repo, so every
+# directory under it counts as inside that repo, and `eza --git` then walks the
+# whole untracked tree to colour one listing. Measured: ~/bugs 19770ms with it
+# versus 5ms without, ~/Code 9500ms versus 8ms. Use `lsg`/`llg` below to opt in
+# per-listing -- inside a normal project repo it costs about 50ms, which is
+# fine; it is only pathological because of the repo at $HOME.
 zstyle ':omz:plugins:eza' 'dirs-first' yes
-zstyle ':omz:plugins:eza' 'git-status' yes
+zstyle ':omz:plugins:eza' 'git-status' no
 zstyle ':omz:plugins:eza' 'icons' yes
 zstyle ':omz:plugins:eza' 'header' yes
 zstyle ':omz:plugins:eza' 'hyperlink' yes
@@ -92,7 +99,7 @@ zstyle ':omz:plugins:eza' 'time-style' long-iso
 # magic-enter: a bare Enter on an empty line runs something useful instead of
 # nothing. In a git repo that is a short status; anywhere else, a listing.
 MAGIC_ENTER_GIT_COMMAND='git status -sb .'
-MAGIC_ENTER_OTHER_COMMAND='eza -l --icons --git --group-directories-first .'
+MAGIC_ENTER_OTHER_COMMAND='eza -l --icons --group-directories-first .'
 
 plugins=(
 	# --- git ---
@@ -278,6 +285,18 @@ alias ffl='ff list'
 alias sps='sudo pacman -Syu'
 alias ysu='yay -Syu'
 alias zbr='zig build run'
+
+# ---- listing ---------------------------------------------------------------
+# `l` is oh-my-zsh's own `ls -lah`, which chains through the eza `ls` alias.
+# Defined explicitly here so it stays a plain, fast long listing no matter what
+# the eza plugin does to `ls`.
+alias l='eza -lah --group-directories-first --icons=auto --time-style=long-iso'
+
+# Opt in to git status per listing. Fast in a normal project repo (~50ms);
+# avoid it in $HOME or anything directly under it, for the reason in the eza
+# zstyle note near the top of this file.
+alias lsg='eza --group-directories-first --icons=auto --git'
+alias llg='eza -lah --group-directories-first --icons=auto --time-style=long-iso --git'
 
 # ---- prompt init -------------------------------------------------------------
 # Colours for both engines come from the wallpaper. oh-my-posh reads the
