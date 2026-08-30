@@ -29,14 +29,27 @@ if [[ -o interactive && -t 1 && -z $TMUX && -z $_FF_GREETED ]]; then
 	fi
 fi
 
-# ---- powerlevel10k instant prompt --------------------------------------------
-# Paints a cached copy of the prompt immediately, then finishes loading the
-# real shell behind it. Everything slow below (nvm, sdkman, plugin sourcing)
-# stops being felt. Set to `quiet` in ~/.p10k.zsh because a few of the tools
-# sourced further down (sdkman, nvm) occasionally print, and the warning about
-# it is noise rather than a problem worth acting on.
-if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
-	source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+# ---- prompt engine -----------------------------------------------------------
+# oh-my-posh is the prompt; powerlevel10k is kept as the fallback so a machine
+# without oh-my-posh installed still gets a usable prompt rather than none.
+#
+# Why the move: powerlevel10k's README now states the project has very limited
+# support, no new features, and that most bugs will go unfixed. Measured on this
+# box, oh-my-posh also reaches a visible prompt slightly sooner (262ms vs 298ms)
+# and, unlike p10k's 1700 lines of hardcoded 256-colour indices, its palette is
+# a dozen named colours -- which is what lets the prompt follow the wallpaper.
+# See ~/.config/matugen/templates/omp.json.
+if command -v oh-my-posh >/dev/null 2>&1 \
+   && [[ -f "$HOME/.config/oh-my-posh/config.json" ]]; then
+	typeset -g _PROMPT_ENGINE=omp
+else
+	typeset -g _PROMPT_ENGINE=p10k
+	# p10k instant prompt: paints a cached prompt immediately, then finishes
+	# loading behind it. Must come before anything that writes to the console,
+	# which is why the greeter above is the only thing allowed to precede it.
+	if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+		source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+	fi
 fi
 
 # Path to your Oh My Zsh installation.
@@ -52,7 +65,12 @@ export _ZL_FZF_HEIGHT="40%"
 export _ZL_ROOT_MARKERS=".git,.hg,.svn,.root,package.json,Cargo.toml,build.zig,go.mod,pyproject.toml"
 export _ZL_EXCLUDE_DIRS="/tmp,$HOME/.cache"
 
-ZSH_THEME="powerlevel10k/powerlevel10k"
+# OMZ must not load a theme when oh-my-posh owns the prompt.
+if [[ $_PROMPT_ENGINE == omp ]]; then
+	ZSH_THEME=""
+else
+	ZSH_THEME="powerlevel10k/powerlevel10k"
+fi
 
 # ---- plugin configuration (must precede oh-my-zsh.sh) ------------------------
 
@@ -112,6 +130,7 @@ plugins=(
 	# --- security work (~/bugs, pentest.zsh) ---
 	nmap                 # zenmap-equivalent scan profiles
 	gh                   # github cli completions
+	direnv               # per-project env; requires an explicit `direnv allow`
 	# --- navigation / fuzzy ---
 	fzf
 	zlua
@@ -205,6 +224,27 @@ if command -v atuin >/dev/null 2>&1; then
 	bindkey '^[[B' history-substring-search-down
 fi
 
+# ---- yazi: cd to the directory you quit in --------------------------------
+# yazi's own wrapper. `y` opens the file manager; quitting with Q leaves the
+# shell in whatever directory you ended up in, which plain `yazi` cannot do
+# because a child process cannot change its parent's cwd.
+y() {
+	local tmp cwd
+	tmp="$(mktemp -t yazi-cwd.XXXXXX)"
+	yazi "$@" --cwd-file="$tmp"
+	if cwd="$(command cat -- "$tmp" 2>/dev/null)" && [[ -n "$cwd" && "$cwd" != "$PWD" ]]; then
+		builtin cd -- "$cwd" && _zlua --add "$PWD" 2>/dev/null
+	fi
+	command rm -f -- "$tmp"
+}
+
+# ---- new tooling -----------------------------------------------------------
+alias lg='lazygit'
+alias md='glow -p'                       # render markdown in a pager
+alias bench='hyperfine --warmup 3'
+# delta is wired in ~/.gitconfig as core.pager with syntax-theme=ansi, so git
+# diffs follow the wallpaper the same way bat does.
+
 # ---- zig dev helper (no OMZ plugin exists for zig) ----
 # zg build | run | test | fmt | check   — run from anywhere inside a zig project
 zg() {
@@ -239,8 +279,15 @@ alias sps='sudo pacman -Syu'
 alias ysu='yay -Syu'
 alias zbr='zig build run'
 
-# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+# ---- prompt init -------------------------------------------------------------
+# Colours for both engines come from the wallpaper. oh-my-posh reads the
+# matugen-generated config; p10k falls back to ~/.p10k.zsh.
+if [[ $_PROMPT_ENGINE == omp ]]; then
+	eval "$(oh-my-posh init zsh --config "$HOME/.config/oh-my-posh/config.json")"
+else
+	# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
+	[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+fi
 
 # ---- PATH --------------------------------------------------------------------
 # GOLANG — GOBIN is $GOPATH/bin, so this covers the Beatrix CLI too.

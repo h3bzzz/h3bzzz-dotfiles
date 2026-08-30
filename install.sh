@@ -76,7 +76,7 @@ PKGS_ARCH=(
     hyprland hyprpaper hyprlock hypridle xdg-desktop-portal-hyprland
     waybar rofi-wayland wofi swaync
     ghostty cava btop neovim tmux fastfetch
-    eza bat fd ripgrep fzf
+    eza bat fd ripgrep fzf git-delta yazi glow go-yq direnv hyperfine
     imagemagick jq python socat
     cliphist wl-clipboard grim slurp brightnessctl
     playerctl pavucontrol wireplumber
@@ -141,6 +141,24 @@ install_deps() {
     clone_if_absent https://github.com/zsh-users/zsh-autosuggestions.git     "$CUSTOM/plugins/zsh-autosuggestions"
     clone_if_absent https://github.com/zsh-users/zsh-syntax-highlighting.git "$CUSTOM/plugins/zsh-syntax-highlighting"
     clone_if_absent https://github.com/zsh-users/zsh-completions.git         "$CUSTOM/plugins/zsh-completions"
+
+    # oh-my-posh drives the prompt. Not in the Arch repos; the AUR binary
+    # package is preferred, with the upstream binary as the fallback so a
+    # machine without an AUR helper still ends up with a prompt.
+    if ! command -v oh-my-posh >/dev/null 2>&1; then
+        if command -v yay >/dev/null 2>&1; then
+            yay -S --needed --noconfirm oh-my-posh-bin >/dev/null 2>&1 \
+                && ok "oh-my-posh (aur)" || warn "oh-my-posh install failed"
+        else
+            mkdir -p "$HOME/.local/bin"
+            if curl -fsSL "https://cdn.ohmyposh.dev/releases/latest/posh-linux-amd64" \
+                    -o "$HOME/.local/bin/oh-my-posh" 2>/dev/null; then
+                chmod +x "$HOME/.local/bin/oh-my-posh"; ok "oh-my-posh (binary)"
+            else
+                warn "oh-my-posh install failed; zsh falls back to powerlevel10k"
+            fi
+        fi
+    fi
 }
 
 # ── deploy ───────────────────────────────────────────────────────────────

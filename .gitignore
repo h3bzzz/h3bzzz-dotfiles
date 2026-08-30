@@ -21,6 +21,12 @@ config/btop/themes/matugen.theme
 config/matugen/colors.sh
 config/matugen/colors.json
 config/fastfetch/lib/palette.lua
+config/tmux/colors.conf
+config/oh-my-posh/config.json
+config/yazi/theme.toml
+config/lazygit/config.yml
+config/atuin/themes/matugen.toml
+config/nvim/lua/config/matugen-palette.lua
 
 # ── Live state ───────────────────────────────────────────────────────────
 config/hypr/current-wallpaper

@@ -113,6 +113,12 @@ if pgrep -x ghostty >/dev/null 2>&1; then
     pkill -USR2 -x ghostty
 fi
 
+# tmux keeps its options in the running server, so a reload is needed for
+# existing sessions to pick up the new palette. No server = nothing to do.
+if command -v tmux >/dev/null 2>&1 && tmux has-session 2>/dev/null; then
+    tmux source-file "$HOME/.config/tmux/tmux.conf" >/dev/null 2>&1
+fi
+
 # btop reads its theme only at startup — nothing to signal.
 
 exit 0

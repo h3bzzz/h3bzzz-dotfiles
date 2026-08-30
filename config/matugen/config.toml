@@ -61,6 +61,34 @@ output_path = '~/.config/ghostty/themes/matugen'
 input_path  = '~/.config/matugen/templates/fastfetch-palette.lua'
 output_path = '~/.config/fastfetch/lib/palette.lua'
 
+# The prompt. Whole config is generated, not just the palette: oh-my-posh's
+# `extends` errors out on a local path, and a p:<name> palette reference only
+# resolves inside the file that declares the palette. Edit the TEMPLATE, then
+# run apply-theme.sh -- never the generated ~/.config/oh-my-posh/config.json.
+[templates.oh-my-posh]
+input_path  = '~/.config/matugen/templates/omp.json'
+output_path = '~/.config/oh-my-posh/config.json'
+
+[templates.tmux]
+input_path  = '~/.config/matugen/templates/tmux-colors.conf'
+output_path = '~/.config/tmux/colors.conf'
+
+[templates.yazi]
+input_path  = '~/.config/matugen/templates/yazi-theme.toml'
+output_path = '~/.config/yazi/theme.toml'
+
+[templates.lazygit]
+input_path  = '~/.config/matugen/templates/lazygit-theme.yml'
+output_path = '~/.config/lazygit/config.yml'
+
+[templates.atuin]
+input_path  = '~/.config/matugen/templates/atuin-theme.toml'
+output_path = '~/.config/atuin/themes/matugen.toml'
+
+[templates.nvim]
+input_path  = '~/.config/matugen/templates/nvim-palette.lua'
+output_path = '~/.config/nvim/lua/config/matugen-palette.lua'
+
 [templates.btop]
 input_path  = '~/.config/matugen/templates/btop.theme'
 output_path = '~/.config/btop/themes/matugen.theme'

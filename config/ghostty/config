@@ -158,6 +158,14 @@ keybind = f11=toggle_fullscreen
 # instance launched with its own app-id, matched by a window rule, toggled with
 # SUPER+grave. See config/hypr/lua/{autostart,rules,binds}.lua.
 
+# ---- shader ------------------------------------------------------------------
+# Subtle bloom + vignette. custom-shader-animation=false means it only redraws
+# when the terminal content changes, so an idle window costs no GPU -- with it
+# true the shader runs continuously at the display's refresh rate.
+# Comment the custom-shader line out to go back to a flat terminal.
+custom-shader = shaders/bloom.glsl
+custom-shader-animation = false
+
 # ---- gtk ---------------------------------------------------------------------
 gtk-titlebar = false
 gtk-tabs-location = top

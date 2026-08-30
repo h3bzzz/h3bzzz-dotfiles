@@ -33,11 +33,17 @@ written into twelve theme slots that every component reads.
      waybar        rofi        ghostty     hyprlock    swaync      btop
                              quickshell    hyprland              fastfetch
                                   │
+        oh-my-posh   tmux   yazi  │  lazygit   atuin   nvim (rose-pine)
+                                  │
                                   └─►  the 16 ANSI slots, which is how
-                                       fzf, eza, bat and LS_COLORS follow
-                                       the wallpaper without a template
-                                       of their own (config/zsh/shell-theme.zsh)
+                                       fzf, eza, bat, delta and LS_COLORS
+                                       follow the wallpaper without a
+                                       template of their own
+                                       (config/zsh/shell-theme.zsh)
 ```
+
+Eighteen files are generated from one image. `apply-theme.sh` rewrites them all
+and reloads every consumer that supports it.
 
 Two details are what make it actually match, and both were arrived at by
 measuring the whole wallpaper library rather than by eye:
@@ -114,7 +120,9 @@ MATUGEN_SCHEME=scheme-content apply-theme.sh   # or override the scheme
 | **Thornwatch** | Terminal screensaver — clock, vitals, recon and lore panels |
 | **swaync** | Notification centre |
 | **btop / cava / nvim / tmux** | Monitor, visualiser, LazyVim, multiplexer |
-| **zsh** | oh-my-zsh + p10k, instant prompt, lazy nvm, wallpaper-tracking fzf/eza/bat |
+| **zsh** | oh-my-zsh, lazy nvm, wallpaper-tracking fzf/eza/bat/delta |
+| **oh-my-posh** | Prompt, palette generated per wallpaper; p10k kept as fallback |
+| **yazi / lazygit / atuin** | File manager (inline images), git TUI, history — all themed |
 | **fastfetch** | Greeter drawn on every new shell; palette regenerated per wallpaper |
 
 ![Tiled workspace](./assets/tiling.png)
@@ -209,6 +217,7 @@ blocks commits containing credential-shaped strings; `install.sh` enables it.
 | `SUPER + H/J/K/L` or arrows | Focus direction |
 | `SUPER + M` / `SUPER + SHIFT + M` | Toggle / move to scratchpad |
 | `SUPER + grave` | **Drop-down terminal** — dedicated ghostty on a special workspace |
+| `y` (shell) | yazi file manager; quitting leaves the shell in that directory |
 | `SUPER + N` | Notification panel |
 | `SUPER + SHIFT + V` | Clipboard history |
 | `SUPER + SHIFT + C` | Pick colour to clipboard |
@@ -239,6 +248,26 @@ than literal hex. matugen already fills those 16 slots from the wallpaper via
 nothing extra to regenerate — and still degrades sanely over SSH or in tmux.
 `BAT_THEME=ansi` is the same trick: bat's `ansi` theme draws only from the
 terminal palette, so it tracks the wallpaper where a named theme would pin it.
+
+### Prompt
+
+`oh-my-posh`, configured by `config/matugen/templates/omp.json`. powerlevel10k
+is still installed and `.zshrc` falls back to it when oh-my-posh is missing, so
+a machine without it still gets a prompt.
+
+The move off p10k was not about speed. p10k's README states the project has very
+limited support, no new features, and that most bugs will go unfixed. Measured
+on this machine, the three options land within 45ms of each other for time to a
+visible prompt (oh-my-posh 262ms, starship 254ms, p10k 298ms) — p10k's instant
+prompt stopped paying for itself once `nvm` was made lazy. What actually decided
+it was that a p10k theme is 1700 lines of hardcoded 256-colour indices, while
+oh-my-posh resolves a dozen named palette colours, which is what lets the prompt
+follow the wallpaper at all. oh-my-posh over starship because its zsh transient
+prompt is native rather than a community hook with known Ctrl+C issues.
+
+One wrinkle worth knowing: matugen and oh-my-posh both use `{{ }}`, so
+oh-my-posh's Go template expressions are backslash-escaped in the matugen
+template. Edit the template, never the generated `config.json`.
 
 ### Ghostty
 

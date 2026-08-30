@@ -123,54 +123,37 @@ return {
     end,
   },
 
-  -- 🌹 Rose Pine variants with transparency
+  -- 🌹 Rosé Pine
+  --
+  -- One spec, not three. Previously `rose-pine`, `rose-pine-moon` and
+  -- `rose-pine-dawn` were three separate specs, each lazy=false priority=1000
+  -- and each calling require("rose-pine").setup(). setup() is global, so the
+  -- last one won: the plugin ended up configured with variant="dawn" and the
+  -- dawn spec also ran `colorscheme rose-pine-dawn`, which is why a bare
+  -- `rose-pine` rendered as the light Dawn variant at startup.
+  --
+  -- The colors/rose-pine-{main,moon,dawn}.lua files that ship with the plugin
+  -- each call colorscheme("<variant>") explicitly, so all three Themery entries
+  -- still work from a single setup() with no variant pinned.
+  --
+  -- `main` takes its palette from the wallpaper when matugen has generated one.
+  -- The override is keyed by variant, so moon and dawn stay true Rosé Pine.
   {
     "rose-pine/neovim",
     name = "rose-pine",
     lazy = false,
     priority = 1000,
     config = function()
+      local ok, wallpaper = pcall(require, "config.matugen-palette")
       require("rose-pine").setup({
+        dark_variant = "main",
         styles = {
           bold = true,
           italic = true,
           transparency = true,
         },
+        palette = ok and { main = wallpaper } or {},
       })
-    end,
-  },
-  {
-    "rose-pine/neovim",
-    name = "rose-pine-moon",
-    lazy = false,
-    priority = 1000,
-    config = function()
-      require("rose-pine").setup({
-        variant = "moon",
-        styles = {
-          bold = true,
-          italic = true,
-          transparency = true,
-        },
-      })
-      vim.cmd("colorscheme rose-pine-moon")
-    end,
-  },
-  {
-    "rose-pine/neovim",
-    name = "rose-pine-dawn",
-    lazy = false,
-    priority = 1000,
-    config = function()
-      require("rose-pine").setup({
-        variant = "dawn",
-        styles = {
-          bold = true,
-          italic = true,
-          transparency = true,
-        },
-      })
-      vim.cmd("colorscheme rose-pine-dawn")
     end,
   },
 
