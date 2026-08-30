@@ -66,6 +66,15 @@ hl.on("hyprland.start", function()
     -- Terminal
     hl.exec_cmd("ghostty")
 
+    -- Drop-down terminal. A second, dedicated ghostty instance that lives on
+    -- the special:dropdown workspace and is toggled with SUPER+grave.
+    -- --gtk-single-instance=false is required: routed through the instance
+    -- above, the new surface would inherit that instance's app-id and the
+    -- window rule in rules.lua would never match it.
+    hl.exec_cmd("ghostty --class=dev.h3bzzz.dropdown --gtk-single-instance=false "
+                .. "--initial-window=true --window-width=185 --window-height=20 "
+                .. "--window-decoration=none --background-opacity=0.94")
+
     -- Clipboard persistence (keeps clipboard after app closes)
     hl.exec_cmd("command -v wl-clip-persist >/dev/null 2>&1 && wl-clip-persist --clipboard regular")
 

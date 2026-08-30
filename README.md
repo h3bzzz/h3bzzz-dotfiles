@@ -31,7 +31,12 @@ written into twelve theme slots that every component reads.
         ┌───────────────────────────────┴────────────────────────────┐
         ▼            ▼            ▼           ▼          ▼           ▼
      waybar        rofi        ghostty     hyprlock    swaync      btop
-                             quickshell    hyprland
+                             quickshell    hyprland              fastfetch
+                                  │
+                                  └─►  the 16 ANSI slots, which is how
+                                       fzf, eza, bat and LS_COLORS follow
+                                       the wallpaper without a template
+                                       of their own (config/zsh/shell-theme.zsh)
 ```
 
 Two details are what make it actually match, and both were arrived at by
@@ -108,7 +113,9 @@ MATUGEN_SCHEME=scheme-content apply-theme.sh   # or override the scheme
 | **Hyprlock / Hypridle** | Lock screen; idle → screensaver → lock → DPMS → suspend |
 | **Thornwatch** | Terminal screensaver — clock, vitals, recon and lore panels |
 | **swaync** | Notification centre |
-| **btop / cava / nvim / tmux / zsh** | Monitor, visualiser, LazyVim, multiplexer, p10k prompt |
+| **btop / cava / nvim / tmux** | Monitor, visualiser, LazyVim, multiplexer |
+| **zsh** | oh-my-zsh + p10k, instant prompt, lazy nvm, wallpaper-tracking fzf/eza/bat |
+| **fastfetch** | Greeter drawn on every new shell; palette regenerated per wallpaper |
 
 ![Tiled workspace](./assets/tiling.png)
 
@@ -201,6 +208,7 @@ blocks commits containing credential-shaped strings; `install.sh` enables it.
 | `SUPER + Z` | Resize mode |
 | `SUPER + H/J/K/L` or arrows | Focus direction |
 | `SUPER + M` / `SUPER + SHIFT + M` | Toggle / move to scratchpad |
+| `SUPER + grave` | **Drop-down terminal** — dedicated ghostty on a special workspace |
 | `SUPER + N` | Notification panel |
 | `SUPER + SHIFT + V` | Clipboard history |
 | `SUPER + SHIFT + C` | Pick colour to clipboard |
@@ -213,6 +221,49 @@ blocks commits containing credential-shaped strings; `install.sh` enables it.
 
 Browser and tool launchers (`B` Zen, `F` Firefox, `G` Chrome, `Y` VS Code,
 `U` Cursor, `I` Burp Suite, `O` Caido) are personal — edit `binds.lua` freely.
+
+---
+
+## Shell
+
+`zsh` + oh-my-zsh + powerlevel10k. Startup is ~275ms; it was ~1.3s before
+`nvm` was made lazy (`zstyle ':omz:plugins:nvm' lazy yes`), which alone
+accounted for 811ms of it. p10k's instant prompt runs in `quiet` mode and is
+placed *after* the fastfetch greeter, since instant prompt only forbids console
+output that comes after it.
+
+Colours come from `config/zsh/shell-theme.zsh`, which sets `FZF_DEFAULT_OPTS`,
+`EZA_COLORS`, `LS_COLORS` and `BAT_THEME` against **ANSI slot numbers** rather
+than literal hex. matugen already fills those 16 slots from the wallpaper via
+`config/matugen/templates/ghostty-theme`, so the shell follows the desktop with
+nothing extra to regenerate — and still degrades sanely over SSH or in tmux.
+`BAT_THEME=ansi` is the same trick: bat's `ansi` theme draws only from the
+terminal palette, so it tracks the wallpaper where a named theme would pin it.
+
+### Ghostty
+
+| Key | Action |
+| --- | --- |
+| `SUPER + grave` | Drop-down terminal (Hyprland special workspace) |
+| `CTRL + SHIFT + ENTER` / `-` | Split right / down |
+| `CTRL + SHIFT + H/J/K/L` | Focus split |
+| `CTRL + SHIFT + Z` | Zoom split |
+| `CTRL + SHIFT + F` | Search scrollback |
+| `CTRL + SHIFT + PageUp/Dn` | Jump to previous / next prompt |
+| `CTRL + SHIFT + O` | Write scrollback to a file and open it |
+| `CTRL + SHIFT + P` | Command palette |
+
+A command that runs longer than 30s in an unfocused surface raises a swaync
+notification (`notify-on-command-finish`), which is aimed at long `nuclei`,
+`subfinder` and `zig build` runs.
+
+Ghostty's own quick terminal is deliberately unused: toggling it from outside
+the app needs `keybind = global:`, which is macOS-only — on Linux the prefix is
+silently dropped and the bind only fires when ghostty already has focus. The
+drop-down is a Hyprland special workspace holding a second ghostty instance
+with its own app-id instead. `size` and `move` window rules are also absent
+from that rule on purpose: Hyprland ignores both for special-workspace windows,
+so the geometry is passed on the ghostty command line in `autostart.lua`.
 
 ---
 

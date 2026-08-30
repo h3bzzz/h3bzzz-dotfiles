@@ -197,3 +197,25 @@ hl.window_rule({
     match   = { tag = "default-opacity" },
     opacity = "1.0 0.92",
 })
+
+-- ============================================================
+-- Drop-down terminal
+--
+-- A dedicated ghostty instance (spawned in autostart.lua with its own app-id)
+-- parked on a special workspace. SUPER+grave slides it in and out.
+--
+-- Ghostty's built-in quick terminal is deliberately not used: toggling it from
+-- outside the app requires `keybind = global:`, which is macOS-only. See the
+-- DROP-DOWN TERMINAL note in ~/.config/ghostty/config.
+-- ============================================================
+
+-- NOTE: `size` and `move` are deliberately absent. Hyprland ignores both for
+-- windows it places on a special workspace (tested: the window stays centred at
+-- whatever size the client asked for). Geometry therefore comes from ghostty's
+-- own --window-width/--window-height in autostart.lua, which is deterministic.
+hl.window_rule({
+    name      = "dropdown-terminal",
+    match     = { class = "^(dev\\.h3bzzz\\.dropdown)$" },
+    workspace = "special:dropdown silent",
+    float     = true,
+})

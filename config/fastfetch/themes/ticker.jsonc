@@ -1,0 +1,32 @@
+{
+  // ticker — three dense lines, no logo. For long-lived shells where a full
+  // fetch is noise. Modules stash into shared Lua state; the last module
+  // rewinds over their blank lines and repaints the whole block.
+  "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+
+  "logo": { "type": "none" },
+
+  "display": {
+    "brightColor": false,
+    "separator": "",
+    "key": { "type": "none" },
+    "size": { "maxPrefix": 8, "ndigits": 1 },
+    "percent": { "type": 1, "ndigits": 0 }
+  },
+
+  "modules": [
+    { "type": "title",    "key": " ", "format": "lua:dofile('/home/h3bzzz/.config/fastfetch/lib/rp.lua') S={} S.t=... return ''" },
+    { "type": "os",       "key": " ", "format": "lua:S.os=... return ''" },
+    { "type": "kernel",   "key": " ", "format": "lua:S.k=... return ''" },
+    { "type": "uptime",   "key": " ", "format": "lua:S.up=... return ''" },
+    { "type": "packages", "key": " ", "format": "lua:S.pkg=... return ''" },
+    { "type": "shell",    "key": " ", "format": "lua:S.sh=... return ''" },
+    { "type": "cpuusage", "key": " ", "waitTime": 60, "format": "lua:S.cpu=... return ''" },
+    { "type": "memory",   "key": " ", "format": "lua:S.mem=... return ''" },
+    { "type": "disk", "folders": "/", "key": " ", "format": "lua:S.dsk=... return ''" },
+    { "type": "wifi",     "key": " ", "format": "lua:S.wifi=... return ''" },
+
+    { "type": "datetime", "key": " ",
+      "format": "lua:local d=... seed(d) local g,gc=greet(d.hour) local l1='  '..c('iris',S.t.userName)..c('hlmed','@')..c('foam',S.t.hostName)..dot()..c('subtle','arch '..S.k.release)..dot()..c('subtle','up '..S.up.formatted)..dot()..c('subtle',S.pkg.all..' pkgs')..dot()..c('subtle',S.sh.prettyName) local cp,mp,dp=pc(S.cpu.avg),pc(S.mem.percentage),pc(S.dsk.sizePercentage) local l2='  '..c('muted','cpu ')..meter(cp,8)..c('subtle',string.format(' %3d%%',cp))..'   '..c('muted','mem ')..meter(mp,8)..c('subtle',string.format(' %3d%%',mp))..'   '..c('muted','dsk ')..meter(dp,8)..c('subtle',string.format(' %3d%%',dp))..'   '..c('foam',S.wifi and ('  '..S.wifi.ssid) or '')..c('muted',S.wifi and string.format(' %s',S.wifi.signalQuality) or '') local l3='  '..c(gc,g)..dot()..c('muted',d.hourPretty..':'..d.minutePretty..' '..d.amPm)..dot()..c('hlmed',pick(KOANS)) return rewind(10)..l1..'\\n'..l2..'\\n'..l3..clearbelow()" }
+  ]
+}

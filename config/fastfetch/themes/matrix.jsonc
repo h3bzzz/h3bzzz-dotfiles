@@ -1,0 +1,36 @@
+{
+  // matrix — monochrome green, procedurally generated katakana rain header.
+  // The rain is reseeded from the wall clock, so no two terminals match.
+  "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+
+  "logo": { "type": "none", "padding": { "top": 1 } },
+
+  "display": {
+    "brightColor": false,
+    "separator": "  ",
+    "key": { "type": "string", "width": 11 },
+    "color": { "keys": "38;2;34;164;73", "separator": "38;2;22;101;52" },
+    "size": { "maxPrefix": 8, "ndigits": 1 },
+    "percent": { "type": 1, "ndigits": 0 }
+  },
+
+  "modules": [
+    { "type": "datetime", "key": " ",
+      "format": "lua:local d=... dofile('/home/h3bzzz/.config/fastfetch/lib/rp.lua') seed(d) return rainblock(4,58)" },
+
+    { "type": "title",  "key": " ", "format": "lua:local d=... return c('38;2;57;211;83','  wake up, '..d.userName..'...')..'\\n'..c('38;2;22;101;52','  '..d.userName..'@'..d.hostName)" },
+    { "type": "os",     "key": "  system","format": "lua:local d=... return c('38;2;57;211;83',d.prettyName..'  '..d.arch)" },
+    { "type": "kernel", "key": "  kernel","format": "lua:local d=... return c('38;2;57;211;83',d.release)" },
+    { "type": "uptime", "key": "  uptime","format": "lua:local d=... return c('38;2;57;211;83',d.formatted)" },
+    { "type": "shell",  "key": "  shell", "format": "lua:local d=... return c('38;2;57;211;83',d.prettyName..' '..d.version)" },
+    { "type": "wm",     "key": "  wm",    "format": "lua:local d=... return c('38;2;57;211;83',d.prettyName..' '..d.version)" },
+
+    { "type": "cpuusage","key": "  cpu", "waitTime": 60,  "format": "lua:local d=... local p=pc(d.avg) return raw('38;2;57;211;83')..string.rep('▮',math.floor(p/5+0.5))..raw('38;2;15;47;26')..string.rep('▮',20-math.floor(p/5+0.5))..string.char(27)..'[0m '..c('38;2;34;164;73',string.format('%d%%',p))" },
+    { "type": "memory", "key": "  memory","format": "lua:local d=... local p=pc(d.percentage) return raw('38;2;57;211;83')..string.rep('▮',math.floor(p/5+0.5))..raw('38;2;15;47;26')..string.rep('▮',20-math.floor(p/5+0.5))..string.char(27)..'[0m '..c('38;2;34;164;73',d.used..' / '..d.total)" },
+    { "type": "disk", "folders": "/", "key": "  disk", "format": "lua:local d=... local p=pc(d.sizePercentage) return raw('38;2;57;211;83')..string.rep('▮',math.floor(p/5+0.5))..raw('38;2;15;47;26')..string.rep('▮',20-math.floor(p/5+0.5))..string.char(27)..'[0m '..c('38;2;34;164;73',d.sizeUsed..' / '..d.sizeTotal)" },
+    { "type": "processes","key": "  procs","format": "lua:local d=... return c('38;2;57;211;83',tostring(d.result))" },
+
+    { "type": "localip", "key": " ",
+      "format": "lua:local d=... return rainrow(58,0.22)..'\\n'..c('38;2;22;101;52','  '..tostring(d.ifname or '')..'   '..tostring(d.ipv4 or d.ip or '-'))" }
+  ]
+}

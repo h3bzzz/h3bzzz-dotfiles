@@ -1,0 +1,56 @@
+{
+  // live — cyberdeck plus real throughput. netio/diskio each sample over a
+  // hardcoded 1s window, which is too slow for shell startup but exactly right
+  // for a refreshing dashboard. Run it with: ff watch  (or: ff live -w 1)
+  "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+
+  "logo": { "type": "none", "padding": { "top": 1 } },
+
+  "display": {
+    "brightColor": false,
+    "separator": "  ",
+    "key": { "type": "string", "width": 9 },
+    "color": { "keys": "38;5;8", "separator": "38;5;0" },
+    "size": { "maxPrefix": 8, "ndigits": 1 },
+    "percent": { "type": 1, "ndigits": 0 },
+    "temp": { "color": { "green": "38;5;2", "yellow": "38;5;3", "red": "38;5;1" } }
+  },
+
+  "modules": [
+    { "type": "datetime", "key": " ",
+      "format": "lua:local d=... dofile('/home/h3bzzz/.config/fastfetch/lib/rp.lua') seed(d) local g,gc=greet(d.hour) return frame('top', c(gc,g)..c('hlmed',' · ')..c('muted',string.format('%s:%s %s  %s %s %d',d.hourPretty,d.minutePretty,d.amPm,d.weekdayShort,d.monthNameShort,d.dayInMonth)))" },
+
+    { "type": "cpuusage", "key": "  cpu", "keyColor": "38;5;5", "waitTime": 250,
+      "format": "lua:local d=... local p=pc(d.avg) return bar(p,22)..string.format('  %s',c('subtle',string.format('%3d%%',p)))..c('muted','  peak '..d.max)" },
+    { "type": "memory", "key": "  mem", "keyColor": "38;5;5",
+      "format": "lua:local d=... local p=pc(d.percentage) return bar(p,22)..'  '..c('subtle',string.format('%3d%%',p))..c('muted','  '..d.used..' / '..d.total)" },
+    { "type": "swap", "key": "  swp", "keyColor": "38;5;5",
+      "format": "lua:local d=... local p=pc(d.percentage) return bar(p,22)..'  '..c('subtle',string.format('%3d%%',p))..c('muted','  '..d.used..' / '..d.total)" },
+    { "type": "disk", "folders": "/", "key": "  dsk", "keyColor": "38;5;5",
+      "format": "lua:local d=... local p=pc(d.sizePercentage) return bar(p,22)..'  '..c('subtle',string.format('%3d%%',p))..c('muted','  '..d.sizeUsed..' / '..d.sizeTotal)" },
+    "break",
+
+    { "type": "cpu", "key": "  soc", "keyColor": "38;5;3", "temp": true,
+      "format": "lua:local d=... return c('subtle',d.codeName)..c('muted','  '..d.coresPhysical..'c/'..d.coresLogical..'t @ '..d.freqMax..'  '..d.technology)..'  '..d.temperature" },
+    { "type": "gpu", "key": "  gpu", "keyColor": "38;5;3",
+      "format": "lua:local d=... return c('subtle',d.name)..c('muted','  '..d.type..'  '..d.driver..'  '..d.frequency)" },
+    { "type": "loadavg", "key": "  load", "keyColor": "38;5;3",
+      "format": "lua:local d=... local col=d.loadavg1>4 and 'love' or (d.loadavg1>2 and 'gold' or 'foam') return c(col,string.format('%.2f',d.loadavg1))..c('muted',string.format('  %.2f  %.2f',d.loadavg2,d.loadavg3))" },
+    { "type": "processes", "key": "  proc", "keyColor": "38;5;3",
+      "format": "lua:local d=... return c('subtle',tostring(d.result))..c('muted',' running')" },
+    "break",
+
+    { "type": "wifi", "key": "  wifi", "keyColor": "38;5;2",
+      "format": "lua:local d=... local q=pc(d.signalQuality) return c('subtle',d.ssid)..'  '..meter(q,8)..' '..c('muted',string.format('%d%%  %s  %s GHz  %s',q,d.protocol,d.band,d.security))..'  '..c('foam',string.format('↓%.0f',d.rxRate))..c('muted','/')..c('love',string.format('↑%.0f Mb/s',d.txRate))" },
+    { "type": "localip", "key": "  lan", "keyColor": "38;5;2",
+      "format": "lua:local d=... return c('subtle',tostring(d.ipv4 or d.ip or '-'))..c('muted','  '..tostring(d.ifname or ''))" },
+    { "type": "netio", "key": "  net", "keyColor": "38;5;2",
+      "format": "lua:local d=... return c('subtle',d.ifname)..'  '..c('foam','↓ '..d.rxSize)..'  '..c('love','↑ '..d.txSize)" },
+    { "type": "diskio", "key": "  io", "keyColor": "38;5;2",
+      "format": "lua:local d=... return c('subtle',d.devPath)..'  '..c('foam','↓ '..d.sizeRead)..'  '..c('love','↑ '..d.sizeWritten)" },
+    "break",
+
+    { "type": "uptime", "key": " ",
+      "format": "lua:local d=... return frame('bottom', c('iris','up '..d.formatted)..c('hlmed',' · ')..c('muted',pick(KOANS)))" }
+  ]
+}

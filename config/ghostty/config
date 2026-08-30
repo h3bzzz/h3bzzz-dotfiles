@@ -1,25 +1,166 @@
+# =============================================================================
+#  ghostty  —  terminal for the hyprland rice
+#
+#  Colours are NOT set here. themes/matugen is regenerated from the wallpaper by
+#  ~/.config/hypr/scripts/apply-theme.sh, which then SIGUSR2s every ghostty
+#  process to re-read this file. Do not add `background`, `foreground` or
+#  `palette` lines below -- they would override the generated theme.
+#
+#  Deliberately unused: `palette-generate` and `palette-harmonious`. Ghostty can
+#  synthesise its own palette from a seed colour, which is exactly matugen's job
+#  here; enabling them would put two generators in charge of the same 16 slots.
+# =============================================================================
+
+# ---- font --------------------------------------------------------------------
 font-family = JetBrainsMono Nerd Font
 font-size = 12
 font-thicken = true
 
-#THEME
-# Regenerated from the wallpaper into themes/matugen by
-# ~/.config/hypr/scripts/apply-theme.sh, which then SIGUSR2s ghostty.
+# JetBrains Mono ships programming ligatures (-> => != <= ===) behind `calt`.
+# `liga` covers the standard set. Drop these two lines if you would rather see
+# the raw characters.
+font-feature = calt
+font-feature = liga
+
+# A little air between lines; easier on long log and nuclei output.
+adjust-cell-height = 8%
+adjust-cursor-thickness = 2
+
+# ---- theme -------------------------------------------------------------------
 theme = matugen
 
+# A wallpaper can hand matugen a low-contrast pair (a washed-out or very light
+# image). This forces a minimum perceptual contrast between text and its
+# background so a bad wallpaper degrades to "muted" rather than "unreadable".
+# 1.0 disables; 3.0 is roughly WCAG AA for large text.
+minimum-contrast = 1.4
+
+# Bold text takes the bright half of the palette rather than a synthetic tint.
+bold-color = bright
+
+# ---- window ------------------------------------------------------------------
 window-padding-x = 10
 window-padding-y = 10
+window-padding-balance = true
 window-height = 30
 window-width = 120
+window-decoration = none
 
 background-opacity = 0.90
+# Ghostty's own blur, independent of Hyprland's layer blur. Keep modest -- the
+# compositor is already blurring what is behind the window.
+background-blur = 20
 
+# Dim the split that does not have focus so the active one reads at a glance.
+unfocused-split-opacity = 0.80
+
+# ---- cursor ------------------------------------------------------------------
 cursor-style = bar
 cursor-style-blink = true
 
-shell-integration = zsh
-shell-integration-features = cursor,sudo
+# ---- scrollback --------------------------------------------------------------
+# Default is 10MB. Recon output (subfinder, httpx, nuclei) blows through that,
+# and the whole point of scrollback search below is being able to go find it.
+scrollback-limit = 104857600
 
-# KEYBINDS
+# ---- shell integration -------------------------------------------------------
+# `cursor` and `sudo` were already on. `title` keeps the tab label following the
+# running command, and marking prompts is what makes jump_to_prompt work.
+shell-integration = zsh
+shell-integration-features = cursor,sudo,title
+
+# Desktop notification when a foreground command that ran longer than the
+# threshold finishes in an unfocused surface. swaync renders it. Built for
+# `nuclei`, `subfinder` and `zig build` runs you walk away from.
+notify-on-command-finish = unfocused
+notify-on-command-finish-after = 30s
+desktop-notifications = true
+
+# ---- mouse / clipboard -------------------------------------------------------
+copy-on-select = clipboard
+mouse-hide-while-typing = true
+link-previews = true
+clipboard-paste-protection = true
+clipboard-trim-trailing-spaces = true
+
+# =============================================================================
+#  KEYBINDS
+# =============================================================================
+
+# ---- clipboard ----
 keybind = ctrl+shift+c=copy_to_clipboard
 keybind = ctrl+shift+v=paste_from_clipboard
+keybind = ctrl+shift+u=copy_url_to_clipboard
+
+# ---- font size ----
+keybind = ctrl+equal=increase_font_size:1
+keybind = ctrl+minus=decrease_font_size:1
+keybind = ctrl+zero=reset_font_size
+
+# ---- splits ----
+# Mirrors the hyprland split feel: same modifier, hjkl to move between panes.
+keybind = ctrl+shift+enter=new_split:right
+keybind = ctrl+shift+backslash=new_split:right
+keybind = ctrl+shift+minus=new_split:down
+keybind = ctrl+shift+h=goto_split:left
+keybind = ctrl+shift+j=goto_split:bottom
+keybind = ctrl+shift+k=goto_split:top
+keybind = ctrl+shift+l=goto_split:right
+keybind = ctrl+shift+z=toggle_split_zoom
+keybind = ctrl+shift+e=equalize_splits
+keybind = ctrl+alt+left=resize_split:left,40
+keybind = ctrl+alt+right=resize_split:right,40
+keybind = ctrl+alt+up=resize_split:up,40
+keybind = ctrl+alt+down=resize_split:down,40
+
+# ---- tabs ----
+keybind = ctrl+shift+t=new_tab
+keybind = ctrl+shift+w=close_surface
+keybind = ctrl+tab=next_tab
+keybind = ctrl+shift+tab=previous_tab
+keybind = alt+one=goto_tab:1
+keybind = alt+two=goto_tab:2
+keybind = alt+three=goto_tab:3
+keybind = alt+four=goto_tab:4
+keybind = alt+five=goto_tab:5
+
+# ---- scrollback search (ghostty 1.3+) ----
+keybind = ctrl+shift+f=start_search
+keybind = ctrl+shift+g=search_selection
+
+# ---- prompt jumping ----
+# Only works because shell-integration marks each prompt. Walks backwards and
+# forwards through the commands you ran, which beats scrolling by hand when a
+# build dumped 4000 lines.
+keybind = ctrl+shift+page_up=jump_to_prompt:-1
+keybind = ctrl+shift+page_down=jump_to_prompt:1
+
+# ---- scrollback to a file ----
+# Opens the whole buffer in $EDITOR. Handy for keeping a scan's output.
+keybind = ctrl+shift+o=write_scrollback_file:open
+
+# ---- misc ----
+keybind = ctrl+shift+p=toggle_command_palette
+keybind = ctrl+shift+comma=reload_config
+keybind = ctrl+shift+i=inspector:toggle
+keybind = f11=toggle_fullscreen
+
+# =============================================================================
+#  DROP-DOWN TERMINAL
+# =============================================================================
+# Ghostty's own quick terminal is NOT used here. Toggling it from outside the
+# app needs `keybind = global:...`, and global keybinds are macOS-only -- on
+# Linux ghostty parses the line but silently drops the `global:` prefix, so the
+# bind only fires when a ghostty surface already has focus. That is backwards
+# for a drop-down.
+#
+# The drop-down is a Hyprland special workspace instead: a dedicated ghostty
+# instance launched with its own app-id, matched by a window rule, toggled with
+# SUPER+grave. See config/hypr/lua/{autostart,rules,binds}.lua.
+
+# ---- gtk ---------------------------------------------------------------------
+gtk-titlebar = false
+gtk-tabs-location = top
+gtk-wide-tabs = false
+gtk-single-instance = true
+linux-cgroup = single-instance

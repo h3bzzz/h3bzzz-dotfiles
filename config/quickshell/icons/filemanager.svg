@@ -5,13 +5,13 @@
   <defs>
     <!-- back panel recedes: the two cool accents -->
     <linearGradient id="fmBack" x1="0" y1="0" x2="0.25" y2="1">
-      <stop offset="0" stop-color="#e1d0ad"/>
-      <stop offset="1" stop-color="#d5d69e"/>
+      <stop offset="0" stop-color="#afc5df"/>
+      <stop offset="1" stop-color="#a0a7d4"/>
     </linearGradient>
     <!-- front flap comes forward: the two warm accents -->
     <linearGradient id="fmFront" x1="0.1" y1="0" x2="0.9" y2="1">
-      <stop offset="0" stop-color="#d9e7be"/>
-      <stop offset="1" stop-color="#e87276"/>
+      <stop offset="0" stop-color="#c7c0e5"/>
+      <stop offset="1" stop-color="#d486b0"/>
     </linearGradient>
   </defs>
 
@@ -21,11 +21,11 @@
 
   <!-- a sheet standing up inside the folder, visible in the gap -->
   <rect x="5.4" y="6.7" width="13.2" height="6.6" rx="1.1"
-        fill="#f1e0ca" opacity="0.94"/>
+        fill="#dde3ee" opacity="0.94"/>
   <rect x="7.3" y="8.7" width="9.4" height="0.95" rx="0.48"
-        fill="#1a1206" opacity="0.55"/>
+        fill="#0d141c" opacity="0.55"/>
   <rect x="7.3" y="10.6" width="6.2" height="0.95" rx="0.48"
-        fill="#1a1206" opacity="0.38"/>
+        fill="#0d141c" opacity="0.38"/>
 
   <!-- front flap, leaning out so the top edge is wider than the bottom -->
   <path fill="url(#fmFront)"

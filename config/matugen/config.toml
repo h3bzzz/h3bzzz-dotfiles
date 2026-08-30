@@ -54,6 +54,13 @@ output_path = '~/.config/quickshell/icons/filemanager.svg'
 input_path  = '~/.config/matugen/templates/ghostty-theme'
 output_path = '~/.config/ghostty/themes/matugen'
 
+# The fastfetch greeter draws on every new shell, so it is the most-seen
+# surface in the rice. Only the palette is generated; all the drawing logic
+# stays in ~/.config/fastfetch/lib/rp.lua, which reads this file.
+[templates.fastfetch]
+input_path  = '~/.config/matugen/templates/fastfetch-palette.lua'
+output_path = '~/.config/fastfetch/lib/palette.lua'
+
 [templates.btop]
 input_path  = '~/.config/matugen/templates/btop.theme'
 output_path = '~/.config/btop/themes/matugen.theme'

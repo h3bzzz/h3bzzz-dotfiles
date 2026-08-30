@@ -1,0 +1,42 @@
+{
+  // wallpaper — current Hyprland wallpaper rendered as the logo (Kitty graphics
+  // protocol, which Ghostty speaks). Info column stays lean so the image leads.
+  // The ff dispatcher falls back to `chafa` type if the terminal can't do kitty.
+  "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+
+  "logo": {
+    "type": "kitty-direct",
+    "source": "/home/h3bzzz/.config/hypr/current-wallpaper",
+    "width": 38,
+    "height": 17,
+    "preserveAspectRatio": true,
+    "padding": { "top": 1, "left": 2, "right": 3 }
+  },
+
+  "display": {
+    "brightColor": false,
+    "separator": "  ",
+    "key": { "type": "icon", "width": 3 },
+    "color": { "keys": "38;5;7" },
+    "size": { "maxPrefix": 8, "ndigits": 1 },
+    "percent": { "type": 1, "ndigits": 0 }
+  },
+
+  "modules": [
+    { "type": "datetime", "key": " ",
+      "format": "lua:local d=... dofile('/home/h3bzzz/.config/fastfetch/lib/rp.lua') seed(d) local g,gc=greet(d.hour) return c(gc,g)..c('hlmed','  ·  ')..c('muted',string.format('%s:%s %s',d.hourPretty,d.minutePretty,d.amPm))" },
+    { "type": "title", "key": " ", "format": "lua:local d=... return c('iris',d.userName)..c('hlmed','@')..c('foam',d.hostName)" },
+    { "type": "custom", "format": "lua:return rule('─',34)" },
+
+    { "type": "os",     "key": "os",   "keyColor": "38;5;5", "format": "lua:local d=... return c('subtle',d.prettyName)" },
+    { "type": "kernel", "key": "krnl", "keyColor": "38;5;5", "format": "lua:local d=... return c('subtle',d.release)" },
+    { "type": "wm",     "key": "wm",   "keyColor": "38;5;5", "format": "lua:local d=... return c('subtle',d.prettyName..' '..d.version)" },
+    { "type": "uptime", "key": "up",   "keyColor": "38;5;5", "format": "lua:local d=... return c('subtle',d.formatted)" },
+    { "type": "memory", "key": "mem",  "keyColor": "38;5;5", "format": "lua:local d=... return meter(pc(d.percentage),10)..c('muted','  '..d.used..' / '..d.total)" },
+    { "type": "disk", "folders": "/", "key": "disk", "keyColor": "38;5;5", "format": "lua:local d=... return meter(pc(d.sizePercentage),10)..c('muted','  '..d.sizeUsed..' / '..d.sizeTotal)" },
+    { "type": "custom", "format": "lua:return rule('─',34)" },
+    { "type": "command", "key": " ", "text": "basename \"$(readlink -f ~/.config/hypr/current-wallpaper 2>/dev/null)\" 2>/dev/null",
+      "format": "lua:local d=... return c('muted','󰸉  '..tostring(d.result))" },
+    { "type": "colors", "symbol": "circle", "paddingLeft": 0 }
+  ]
+}

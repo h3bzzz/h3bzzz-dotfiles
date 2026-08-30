@@ -1,0 +1,38 @@
+{
+  // crt — 1987 BBS system-status screen. Double-line box, dot leaders, amber/rose.
+  "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+
+  "logo": { "type": "none", "padding": { "top": 1 } },
+
+  "display": {
+    "brightColor": false,
+    "separator": "",
+    "key": { "type": "none" },
+    "size": { "maxPrefix": 8, "ndigits": 1 },
+    "percent": { "type": 1, "ndigits": 0 }
+  },
+
+  "modules": [
+    { "type": "datetime", "key": " ",
+      "format": "lua:local d=... dofile('/home/h3bzzz/.config/fastfetch/lib/rp.lua') seed(d) return boxline('top')..'\\n'..boxtitle('▓▒░  A R C H   S Y S T E M   S T A T U S  ░▒▓','love')..'\\n'..boxline('mid')..'\\n'..boxrow('TIMESTAMP',string.format('%s %s %d %d  %s:%s:%s %s %s',d.weekdayShort,d.monthNameShort,d.dayInMonth,d.year,d.hourPretty,d.minutePretty,d.secondPretty,d.amPm,d.timezoneName))" },
+
+    { "type": "title",  "key": " ", "format": "lua:local d=... return boxrow('OPERATOR',d.userName..'@'..d.hostName)" },
+    { "type": "os",     "key": " ", "format": "lua:local d=... return boxrow('SYSTEM',d.prettyName..' '..d.arch)" },
+    { "type": "kernel", "key": " ", "format": "lua:local d=... return boxrow('KERNEL',d.release)" },
+    { "type": "host",   "key": " ", "format": "lua:local d=... return boxrow('MACHINE',tostring(d.name))" },
+    { "type": "uptime", "key": " ", "format": "lua:local d=... return boxrow('UPTIME',d.formatted..'  (since '..d.bootTime..')')" },
+    { "type": "shell",  "key": " ", "format": "lua:local d=... return boxrow('SHELL',d.prettyName..' '..d.version)..'\\n'..boxline('mid')" },
+
+    { "type": "cpu",    "key": " ", "temp": true, "format": "lua:local d=... return boxrow('PROCESSOR',d.name)" },
+    { "type": "cpuusage","key": " ", "waitTime": 60, "format": "lua:local d=... local p=pc(d.avg) return boxrow('CPU LOAD',string.format('[%s] %3d%%',bar(p,24,{'#','-'}),p),'gold','subtle')" },
+    { "type": "memory", "key": " ", "format": "lua:local d=... local p=pc(d.percentage) return boxrow('CORE MEM',string.format('[%s] %3d%%  %s',bar(p,24,{'#','-'}),p,d.used),'gold','subtle')" },
+    { "type": "disk", "folders": "/", "key": " ", "format": "lua:local d=... local p=pc(d.sizePercentage) return boxrow('MASS STORE',string.format('[%s] %3d%%  %s',bar(p,24,{'#','-'}),p,d.sizeUsed),'gold','subtle')" },
+    { "type": "gpu",    "key": " ", "format": "lua:local d=... return boxrow('GRAPHICS',d.name)" },
+    { "type": "packages","key": " ", "format": "lua:local d=... return boxrow('SOFTWARE',d.pacman..' packages installed')..'\\n'..boxline('mid')" },
+
+    { "type": "wifi",   "key": " ", "format": "lua:local d=... return boxrow('CARRIER',d.ssid..'  '..d.signalQuality..'  '..d.protocol)..'\\n'..boxrow('LINK RATE',string.format('RX %.0f Mb/s   TX %.0f Mb/s',d.rxRate,d.txRate))" },
+    { "type": "localip","key": " ", "format": "lua:local d=... return boxrow('NODE ADDR',tostring(d.ipv4 or d.ip or '-')..'  ('..tostring(d.ifname or '')..')')" },
+    { "type": "battery","key": " ", "format": "lua:local d=... return boxrow('POWER',tostring(d.capacity)..'  '..tostring(d.status[1] or ''))" },
+    { "type": "processes","key":" ", "format": "lua:local d=... return boxrow('TASKS',d.result..' processes')..'\\n'..boxline('bottom')..'\\n'..c('muted','  > '..pick(KOANS))" }
+  ]
+}

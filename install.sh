@@ -75,7 +75,8 @@ choose_mode() {
 PKGS_ARCH=(
     hyprland hyprpaper hyprlock hypridle xdg-desktop-portal-hyprland
     waybar rofi-wayland wofi swaync
-    ghostty cava btop neovim tmux
+    ghostty cava btop neovim tmux fastfetch
+    eza bat fd ripgrep fzf
     imagemagick jq python socat
     cliphist wl-clipboard grim slurp brightnessctl
     playerctl pavucontrol wireplumber
@@ -199,6 +200,11 @@ deploy() {
     place "$DOTFILES/config/zsh/.zshrc"    "$HOME/.zshrc"
     place "$DOTFILES/config/zsh/.p10k.zsh" "$HOME/.p10k.zsh"
 
+    # Wallpaper-tracking shell colours (fzf, eza, bat, LS_COLORS). Lives under
+    # $CONFIG rather than $HOME because .zshrc sources it by that path.
+    mkdir -p "$CONFIG/zsh"
+    place "$DOTFILES/config/zsh/shell-theme.zsh" "$CONFIG/zsh/shell-theme.zsh"
+
     # Secrets stub. .zshrc sources this when present and .gitignore excludes
     # it, so machine-local keys never reach the repo.
     mkdir -p "$CONFIG/zsh"
@@ -258,7 +264,7 @@ generate_theme() {
         return 1
     fi
     if bash "$CONFIG/hypr/scripts/apply-theme.sh" >/dev/null 2>&1; then
-        ok "waybar, rofi, ghostty, quickshell, swaync, btop and hyprland palettes written"
+        ok "waybar, rofi, ghostty, quickshell, swaync, btop, fastfetch and hyprland palettes written"
     else
         warn "apply-theme.sh failed; run it by hand once a wallpaper is set"
     fi

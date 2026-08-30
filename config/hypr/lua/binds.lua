@@ -64,6 +64,12 @@ hl.bind(mainMod .. " + SHIFT + I",     hl.dsp.exec_cmd("swayimg --gallery"),    
 hl.bind(mainMod .. " + M",         hl.dsp.workspace.toggle_special("magic"),              { description = "Toggle scratchpad" })
 hl.bind(mainMod .. " + SHIFT + M", hl.dsp.window.move({ workspace = "special:magic" }),      { description = "Move to scratchpad" })
 
+-- Drop-down terminal. A dedicated ghostty instance spawned in autostart.lua
+-- and parked on special:dropdown by the rule in rules.lua. Ghostty's own quick
+-- terminal cannot be used because toggling it from outside the app needs a
+-- `global:` keybind, which is macOS-only.
+hl.bind(mainMod .. " + grave",     hl.dsp.workspace.toggle_special("dropdown"),           { description = "Toggle drop-down terminal" })
+
 -- ============================================================
 -- Session / utilities
 -- ============================================================

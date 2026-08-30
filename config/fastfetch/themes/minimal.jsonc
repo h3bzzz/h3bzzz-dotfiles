@@ -1,0 +1,35 @@
+{
+  // minimal — six lines, small logo, muted palette. For when the terminal is for working in.
+  "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+
+  "logo": {
+    "type": "small",
+    "source": "arch",
+    "padding": { "top": 1, "left": 3, "right": 4 },
+    "color": { "1": "38;5;5", "2": "38;5;8" }
+  },
+
+  "display": {
+    "brightColor": false,
+    "separator": "",
+    "key": { "type": "none" },
+    "color": { "keys": "38;5;8" },
+    "size": { "maxPrefix": 8, "ndigits": 1 },
+    "percent": { "type": 1, "ndigits": 0 }
+  },
+
+  "modules": [
+    { "type": "datetime", "key": " ",
+      "format": "lua:local d=... dofile('/home/h3bzzz/.config/fastfetch/lib/rp.lua') seed(d) local g,gc=greet(d.hour) return c(gc,g)..c('hlmed',' · ')..c('muted',d.hourPretty..':'..d.minutePretty..' '..d.amPm)" },
+    { "type": "title", "key": " ", "format": "lua:local d=... return c('iris',d.userName)..c('hlmed','@')..c('foam',d.hostName)" },
+    { "type": "kernel", "key": " ", "format": "lua:local d=... return c('subtle','arch')..c('muted','  '..d.release)" },
+    { "type": "uptime", "key": " ",
+      "format": "lua:local d=... return c('subtle','up')..c('muted','  '..d.formatted)" },
+    { "type": "memory", "key": " ",
+      "format": "lua:local d=... local p=pc(d.percentage) return meter(p,12)..c('muted','  '..d.used..' / '..d.total)" },
+    { "type": "disk", "folders": "/", "key": " ",
+      "format": "lua:local d=... local p=pc(d.sizePercentage) return meter(p,12)..c('muted','  '..d.sizeUsed..' / '..d.sizeTotal)" },
+    { "type": "packages", "key": " ",
+      "format": "lua:local d=... return c('subtle',tostring(d.pacman))..c('muted','  packages')" }
+  ]
+}

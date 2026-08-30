@@ -20,6 +20,7 @@ config/ghostty/themes/matugen
 config/btop/themes/matugen.theme
 config/matugen/colors.sh
 config/matugen/colors.json
+config/fastfetch/lib/palette.lua
 
 # ── Live state ───────────────────────────────────────────────────────────
 config/hypr/current-wallpaper
