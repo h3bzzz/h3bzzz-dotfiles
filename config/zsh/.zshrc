@@ -15,11 +15,25 @@
 #  Machine-local secrets live in ~/.config/zsh/secrets.zsh (gitignored).
 # =============================================================================
 
+# ---- PATH: ~/.local/bin, early ------------------------------------------------
+# This has to happen before anything below looks for a binary. oh-my-posh, ff
+# and the daily-verse helpers all live here, and the prompt-engine check further
+# down runs `command -v oh-my-posh` -- with this export left at the bottom of
+# the file where it used to be, that check failed in any shell whose inherited
+# PATH lacked ~/.local/bin, and the prompt silently fell back to powerlevel10k.
+#
+# `typeset -U` makes $path a unique-valued array, so the re-prepend near the
+# bottom of this file still decides final precedence without leaving a
+# duplicate entry behind.
+typeset -U path PATH
+export PATH="$HOME/.local/bin:$PATH"
+
 # ---- greeter -----------------------------------------------------------------
 # Random fastfetch theme on every new terminal — ghostty windows, tabs and
 # splits all spawn a fresh interactive shell, so each one draws its own theme.
 # See ~/.config/fastfetch/README.md; `ff doctor` explains what it detected.
-# This runs before the PATH exports further down, so resolve ff explicitly.
+# ~/.local/bin is already on PATH above; the explicit path is kept as a
+# fallback for a shell that somehow starts with a stripped PATH.
 if [[ -o interactive && -t 1 && -z $TMUX && -z $_FF_GREETED ]]; then
 	typeset -g _FF_GREETED=1
 	if [[ -x $HOME/.local/bin/ff ]]; then
