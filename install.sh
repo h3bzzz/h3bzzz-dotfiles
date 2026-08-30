@@ -235,6 +235,22 @@ STUB
         ok "secrets.zsh stub (gitignored)"
     fi
 
+    # fastfetch's Lua sandbox exposes no `os`, `io` or `package`, so a theme
+    # cannot work out where it lives -- every dofile() and the palette load in
+    # lib/rp.lua spell the path out in full. Rewrite them for this $HOME. Only
+    # touches the copies under $CONFIG, never the repo.
+    if [ -d "$CONFIG/fastfetch" ]; then
+        ff_real="$(readlink -f "$CONFIG/fastfetch")"
+        if grep -rqs "/home/h3bzzz/.config/fastfetch" "$ff_real" 2>/dev/null \
+           && [ "$HOME" != "/home/h3bzzz" ]; then
+            grep -rls "/home/h3bzzz/.config/fastfetch" "$ff_real" 2>/dev/null \
+            | while IFS= read -r f; do
+                sed -i "s|/home/h3bzzz/.config/fastfetch|$HOME/.config/fastfetch|g" "$f"
+            done
+            ok "fastfetch paths rewritten for $HOME"
+        fi
+    fi
+
     say "Installing wallpapers"
     mkdir -p "$HOME/Pictures"
     if [ "$MODE" = link ]; then

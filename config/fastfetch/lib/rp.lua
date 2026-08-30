@@ -18,25 +18,32 @@ RP = {
   hlmed = '38;2;64;61;82',    hlhigh = '38;2;82;79;103',
 }
 
-do
-  -- '#rrggbb' -> '38;2;r;g;b'
+-- Overlay the wallpaper palette when matugen has generated one.
+--
+-- Two hard constraints from fastfetch's Lua sandbox, both learned the hard way:
+--   * There is no `os`, `io`, `debug`, `package` or `require` -- only string,
+--     table, math, load/loadfile/dofile and pcall. So $HOME cannot be read and
+--     the path has to be spelled out, exactly as the themes already do in their
+--     dofile() of this file. install.sh rewrites it for a different $HOME.
+--   * An error here aborts the whole dofile, which would leave every helper
+--     below undefined and silently blank out every theme that uses one. Hence
+--     the pcall: a broken or missing palette must degrade to Rosé Pine, never
+--     take the greeter down with it.
+pcall(function()
   local function sgr(hex)
     local r, g, b = tostring(hex):match('^#?(%x%x)(%x%x)(%x%x)$')
     if not r then return nil end
     return '38;2;' .. tonumber(r, 16) .. ';' .. tonumber(g, 16) .. ';' .. tonumber(b, 16)
   end
-  local gen = os.getenv('HOME') .. '/.config/fastfetch/lib/palette.lua'
-  local f = loadfile(gen)
-  if f then
-    pcall(f)
-    if type(PALETTE_HEX) == 'table' then
-      for name, hex in pairs(PALETTE_HEX) do
-        local v = sgr(hex)
-        if v then RP[name] = v end
-      end
-    end
+  local f = loadfile('/home/h3bzzz/.config/fastfetch/lib/palette.lua')
+  if not f then return end
+  f()
+  if type(PALETTE_HEX) ~= 'table' then return end
+  for name, hex in pairs(PALETTE_HEX) do
+    local v = sgr(hex)
+    if v then RP[name] = v end
   end
-end
+end)
 
 -- c('foam', 'text') -> colored string, reset afterwards
 function c(name, s) return E .. '[' .. (RP[name] or name) .. 'm' .. s .. E .. '[0m' end
