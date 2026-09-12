@@ -160,7 +160,6 @@ plugins=(
 	# --- git via fzf ---
 	forgit
 	# --- typing aids ---
-	thefuck
 	zsh-you-should-use
 	# --- MUST stay last three, in this order ---
 	zsh-autosuggestions
@@ -290,7 +289,6 @@ export ARCHFLAGS="-arch $(uname -m)"
 
 # ---- aliases -----------------------------------------------------------------
 # Longer-lived alias sets live in $ZSH_CUSTOM/*.zsh (see pentest.zsh).
-alias gau='/usr/bin/gau'
 alias pn=pnpm
 alias tx='/usr/bin/tmux'
 # ff is a real script (~/.local/bin/ff) — no alias needed. Handy shortcuts:
@@ -371,8 +369,13 @@ export _JAVA_AWT_WM_NONREPARENTING=1
 # bun completions
 [ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
 
-. "$HOME/.local/bin/env"
+# Optional helper env file (Homebrew/uv/mise-style installers write one here).
+# Guarded so a machine without it doesn't error on every shell start.
+[[ -f "$HOME/.local/bin/env" ]] && # Optional helper env file (Homebrew/uv/mise-style installers write one here).
+# Guarded so a machine without it doesn't error on every shell start.
+[[ -f "$HOME/.local/bin/env" ]] && . "$HOME/.local/bin/env"
 
 #THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
 export SDKMAN_DIR="$HOME/.sdkman"
 [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
+export PATH="/opt/zig_17_dev:$PATH"

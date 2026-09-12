@@ -121,4 +121,10 @@ fi
 
 # btop reads its theme only at startup — nothing to signal.
 
+# Sync the greetd/regreet login-screen background and palette to this theme.
+if command -v sync-greeter-wallpaper >/dev/null 2>&1; then
+    env -u TERMINFO sudo -n /usr/local/bin/sync-greeter-wallpaper >/dev/null 2>&1 || \
+        printf 'apply-theme: greeter not synced; login screen keeps its old look\n' >&2
+fi
+
 exit 0

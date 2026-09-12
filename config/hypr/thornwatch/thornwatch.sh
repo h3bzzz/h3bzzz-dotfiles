@@ -20,7 +20,25 @@ CACHE_DIR=${XDG_CACHE_HOME:-$HOME/.cache}/thornwatch
 # shellcheck source=/dev/null
 . "$TW_DIR/lib/palette.sh"
 
+# The display-manager environment that spawns the saver omits $HOME/.local/bin
+# even though that is exactly where pipx installs tte, so `command -v tte` can
+# fail under hypridle while succeeding in an interactive shell. Rebuild the
+# user-local bin dirs ahead of the check instead of trusting the session PATH.
+add_user_bins() {
+    local dir
+    for dir in "$HOME/.local/bin" "$HOME/bin"; do
+        [[ -d $dir ]] || continue
+        case ":$PATH:" in
+            *":$dir:"*) ;;
+            *) PATH="$dir:$PATH" ;;
+        esac
+    done
+}
+add_user_bins
+
 TTE=${TW_TTE:-$(command -v tte)}
+[[ -x $TTE ]] || TTE=${TW_TTE:-$HOME/.local/bin/tte}   # pipx default location
+[[ -x $TTE ]] || TTE=$(command -v terminaltexteffects) # pipx's other symlink
 [[ -x $TTE ]] || { echo "thornwatch: tte not found on PATH" >&2; sleep 5; exit 1; }
 
 mkdir -p "$CACHE_DIR"

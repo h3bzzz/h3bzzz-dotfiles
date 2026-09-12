@@ -68,6 +68,12 @@ scrollback-limit = 104857600
 # running command, and marking prompts is what makes jump_to_prompt work.
 shell-integration = zsh
 shell-integration-features = cursor,sudo,title
+# The login shell is /bin/bash, but this rice lives entirely in ~/.zshrc
+# (oh-my-posh prompt, aliases, plugins). Always spawn zsh instead of whatever
+# /etc/passwd says, so every ghostty tab/split gets the configured prompt.
+# Drop this line if you later run `chsh -s /usr/bin/zsh` and prefer to rely on
+# the login shell.
+command = /usr/bin/zsh
 
 # Desktop notification when a foreground command that ran longer than the
 # threshold finishes in an unfocused surface. swaync renders it. Built for
