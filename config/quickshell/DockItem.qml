@@ -160,7 +160,10 @@ Item {
     // clicks only -- all hover state comes from the bar-level handler so the
     // two never disagree
     MouseArea {
-        anchors.fill: parent
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        height: Theme.slot + root.liftAmount + (root.mag - 1.0) * Theme.slot
         acceptedButtons: Qt.LeftButton
         cursorShape: Qt.PointingHandCursor
         onClicked: {

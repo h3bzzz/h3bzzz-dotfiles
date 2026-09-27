@@ -6,6 +6,12 @@ import Quickshell.Wayland
 PanelWindow {
     id: win
 
+    // Set by the `Variants` in shell.qml: the screen this dock instance is
+    // pinned to (one instance per connected monitor). Without it a single
+    // PanelWindow can only ever live on one screen.
+    property var modelData
+    screen: modelData
+
     anchors { bottom: true }
     margins { bottom: 6 }
 
@@ -155,7 +161,11 @@ PanelWindow {
                 DockItem {
                     index: 2; hoveredIndex: win.hoveredIndex
                     label: "Neovim"; accent: Theme.foam
-                    iconSource: Quickshell.iconPath("nvim")
+                    // nvim is a /opt tarball here, so its icon never lands in an
+                    // XDG icon theme and Quickshell.iconPath("nvim") resolves to
+                    // nothing. Same treatment as Discord/spotify-adjacent slots:
+                    // bundle the artwork and point at the file.
+                    iconSource: "file://" + Quickshell.shellDir + "/icons/nvim.png"
                     exec: ["ghostty", "-e", "nvim"]
                     appIdMatch: []
                 }
@@ -199,9 +209,21 @@ PanelWindow {
                 }
             }
 
-            // Single source of hover truth. Because every slot is a fixed
-            // Theme.slot wide, this maps cursor -> fractional index with plain
-            // arithmetic and can never disagree with the rendered layout.
+        }
+
+        // Transparent hover-truth band. Magnified icons LIFT UP out of the
+        // bar into the headroom, so the handler's hit region must cover bar +
+        // headroom too -- otherwise a cursor resting on a raised icon top
+        // falls outside the bar rect, hover drops, and the whole row collapses
+        // out from under it ("won't grab at the top"). Same X geometry as the
+        // bar, so indexAt(x) below is byte-for-byte unchanged.
+        Item {
+            id: hoverSurface
+            anchors.left: bar.left
+            anchors.right: bar.right
+            anchors.bottom: bar.bottom
+            height: bar.implicitHeight + win.headroom
+
             HoverHandler {
                 id: barHover
                 onPointChanged: win.hoveredIndex = win.indexAt(point.position.x)

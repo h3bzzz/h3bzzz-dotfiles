@@ -99,9 +99,11 @@ if pgrep -x waybar >/dev/null 2>&1; then
     pkill -USR2 -x waybar
 fi
 
-# swaync reloads CSS without dropping the notification history.
+# swaync reloads CSS without dropping the notification history. It must
+# never block the theme pipeline for long; a dead daemon (or a dbus race at
+# login) previously hung apply-theme.sh for minutes, so cap the wait.
 if command -v swaync-client >/dev/null 2>&1; then
-    swaync-client --reload-css >/dev/null 2>&1
+    timeout 5 swaync-client --reload-css >/dev/null 2>&1
 fi
 
 # Quickshell needs no signal: it watches its config directory and reloads
