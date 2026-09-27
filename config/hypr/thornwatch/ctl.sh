@@ -19,6 +19,10 @@ TW_DIR=${TW_DIR:-$HOME/.config/hypr/thornwatch}
 [[ -r $TW_DIR/thornwatch.conf ]] && . "$TW_DIR/thornwatch.conf"
 
 TW_CLASS=${TW_CLASS:-dev.h3bzzz.thornwatch}
+# Hyprland window selector for the saver. `[.]` rather than `\.` keeps the
+# regex free of backslashes, which would otherwise need escaping twice: once
+# for bash and again inside the Lua string that hyprctl evaluates.
+TW_SELECTOR="class:^(${TW_CLASS//./[.]})\$"
 RUNTIME=${XDG_RUNTIME_DIR:-/tmp}/thornwatch
 PIDFILE=$RUNTIME/pid
 STARTFILE=$RUNTIME/started_at
@@ -26,7 +30,7 @@ mkdir -p "$RUNTIME"
 
 # Mapping a new window is itself an input event as far as Hyprland's idle
 # notifier is concerned -- verified by isolating the three things cmd_start
-# does: `brightnessctl -r` and `hyprctl dispatch focuswindow` produce nothing,
+# does: `brightnessctl -r` and `hl.dsp.focus({ window = ... })` produce nothing,
 # spawning the ghostty surface produces a resume within a second.
 #
 # So hypridle sees the saver appear, calls this script's `wake`, and the saver
@@ -94,20 +98,19 @@ spawn_terminal() {
 # where the config has not been reloaded yet, and it also pulls focus so
 # keystrokes land in the saver instead of whatever was underneath.
 enforce_window() {
-    local match="class:^(${TW_CLASS//./\\.})$" i
+    local i
     for (( i = 0; i < 40; i++ )); do
         if hyprctl clients -j 2>/dev/null | grep -q "\"class\": \"$TW_CLASS\""; then
-            # fullscreenstate sets an absolute state; `dispatch fullscreen`
-            # is a toggle and would UNDO the rules.lua fullscreen when the
-            # rule did fire. `pin` is floating-only, so it is left to the rule.
-            hyprctl --batch "\
-                dispatch focuswindow $match ; \
-                dispatch fullscreenstate 2 2 ; \
-                setprop $match noanim 1 ; \
-                setprop $match norounding 1 ; \
-                setprop $match noborder 1 ; \
-                setprop $match nodim 1 ; \
-                setprop $match opaque 1" >/dev/null 2>&1
+            # fullscreen_state with action "set" is absolute; `fullscreen` is a
+            # toggle and would UNDO the rules.lua fullscreen when the rule did
+            # fire. `pin` is floating-only, so it is left to the rule.
+            hyprctl eval "
+                local w = '$TW_SELECTOR'
+                hl.dispatch(hl.dsp.focus({ window = w }))
+                hl.dispatch(hl.dsp.window.fullscreen_state({ window = w, action = 'set', internal = 2, client = 2 }))
+                for prop, value in pairs({ no_anim = '1', no_dim = '1', opaque = '1', rounding = '0', border_size = '0' }) do
+                    hl.dispatch(hl.dsp.window.set_prop({ window = w, prop = prop, value = value }))
+                end" >/dev/null 2>&1
             return 0
         fi
         sleep 0.1
@@ -153,7 +156,7 @@ cmd_stop() {
     fi
     : > "$PIDFILE"
 
-    hyprctl dispatch closewindow "class:^(${TW_CLASS//./\\.})$" >/dev/null 2>&1
+    hyprctl dispatch "hl.dsp.window.close({ window = '$TW_SELECTOR' })" >/dev/null 2>&1
 }
 
 # One way in to the lock screen, for every caller.

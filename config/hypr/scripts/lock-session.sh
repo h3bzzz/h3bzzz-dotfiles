@@ -43,7 +43,7 @@ if [[ ${1:-} == --dpms-watchdog ]]; then
     # every lock, so only the newest watchdog still matches.
     [[ -r $TOKENFILE && $(<"$TOKENFILE") == "$token" ]] || exit 0
     pidof hyprlock >/dev/null 2>&1 || exit 0
-    hyprctl dispatch dpms off >/dev/null 2>&1
+    hyprctl dispatch 'hl.dsp.dpms({ action = "off" })' >/dev/null 2>&1
     exit 0
 fi
 
@@ -51,7 +51,7 @@ fi
 # token is what retires any watchdog still counting down.
 if [[ ${1:-} == unlocked ]]; then
     : > "$TOKENFILE"
-    hyprctl dispatch dpms on >/dev/null 2>&1
+    hyprctl dispatch 'hl.dsp.dpms({ action = "on" })' >/dev/null 2>&1
     exit 0
 fi
 
@@ -121,6 +121,6 @@ fi
 # unlock was clean: a watchdog may still be mid-sleep, and if it already fired
 # the display is off and needs waking regardless of what unlocked us.
 : > "$TOKENFILE"
-hyprctl dispatch dpms on >/dev/null 2>&1
+hyprctl dispatch 'hl.dsp.dpms({ action = "on" })' >/dev/null 2>&1
 
 exit $rc

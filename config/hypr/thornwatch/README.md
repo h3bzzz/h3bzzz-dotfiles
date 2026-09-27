@@ -126,7 +126,7 @@ Preview one without waiting for the idle timer:
 
 - **One monitor.** The saver is a single fullscreen window. On a multi-head
   setup the other outputs keep showing the desktop until the 15-minute hard
-  lock. Fixing that means one terminal per monitor with `monitor:` rules.
+  lock. Fixing that means one terminal per monitor with `monitor =` rules.
 - **Pin does not stick on fullscreen windows.** Hyprland only pins floating
   windows, so `pinned` reads false in `hyprctl clients`. It does not matter
   while the window holds focus, which the `stay_focused` rule guarantees.
@@ -135,6 +135,13 @@ Preview one without waiting for the idle timer:
   eval."* Runtime rule changes go through `hyprctl eval 'hl.window_rule({...})'`,
   which is also the cheapest way to check whether a rule field name is real —
   it validates one unknown field per call.
+- **So are the old dispatcher strings.** `hyprctl dispatch` is shorthand for
+  `hyprctl eval 'hl.dispatch(...)'`, so `hyprctl dispatch dpms off` fails with
+  a Lua syntax error; it has to be `hyprctl dispatch 'hl.dsp.dpms({ action =
+  "off" })'`. Window props took snake_case names at the same time (`noanim` is
+  now `no_anim`; `norounding`/`noborder` are `rounding = 0`/`border_size = 0`).
+  ctl.sh builds its window selector with `[.]` instead of `\.` so the regex
+  survives both bash and the Lua string without escaping.
 - **Caches** live in `~/.cache/thornwatch`: the effect list, one marker per
   effect recording whether it accepts `--final-gradient-*`, and the recon
   table (15 minute TTL, because walking 400k files under `~/bugs` is not

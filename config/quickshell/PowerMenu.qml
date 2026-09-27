@@ -69,7 +69,7 @@ DropSurface {
         },
         {
             glyph: "󰍃", label: "Log Out", hint: "O", accent: Theme.rose,
-            argv: ["hyprctl", "dispatch", "exit"]
+            argv: ["sh", "-c", "command -v hyprshutdown >/dev/null 2>&1 && exec hyprshutdown -t 'Logging out...' || exec hyprctl dispatch 'hl.dsp.exit()'"]
         }
     ]
 

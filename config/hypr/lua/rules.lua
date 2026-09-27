@@ -99,13 +99,13 @@ hl.window_rule({
 
 -- ============================================================
 -- hyprland-run floater (bottom-left)
--- OFFICIAL: move = "20 monitor_h-120" (string expression)
+-- move takes { x, y }; each side may be a number or an expression string.
 -- ============================================================
 
 hl.window_rule({
     name  = "move-hyprland-run",
     match = { class = "hyprland-run" },
-    move  = "20 monitor_h-120",
+    move  = { 20, "monitor_h-120" },
     float = true,
 })
 

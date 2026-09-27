@@ -15,10 +15,10 @@ local screenshotDir = home .. "/Pictures/screenshots"
 
 hl.bind(mainMod .. " + RETURN", hl.dsp.exec_cmd(terminal),                          { description = "Open terminal" })
 hl.bind(mainMod .. " + Q",     hl.dsp.window.close(),                             { description = "Close active window" })
--- uwsm is not installed and `hyprctl dispatch 'hl.dsp.exit()'` was never a
--- valid dispatcher string, so the old chained shell command was a no-op.
--- hl.dsp.exit() is the real dispatcher.
-hl.bind(mainMod .. " + SHIFT + E", hl.dsp.exit(), { description = "Exit Hyprland" })
+-- hyprshutdown asks every app to close before quitting, so nothing loses
+-- unsaved state; the wiki recommends it over a bare hl.dsp.exit(). The exit
+-- dispatcher stays as the fallback if hyprshutdown is ever missing.
+hl.bind(mainMod .. " + SHIFT + E", hl.dsp.exec_cmd("command -v hyprshutdown >/dev/null 2>&1 && hyprshutdown -t 'Logging out...' || hyprctl dispatch 'hl.dsp.exit()'"), { description = "Exit Hyprland" })
 
 -- ============================================================
 -- App launchers

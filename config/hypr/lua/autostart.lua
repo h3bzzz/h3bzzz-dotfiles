@@ -38,12 +38,10 @@ hl.env("XDG_SESSION_TYPE", "wayland")
 -- ============================================================
 
 hl.on("hyprland.start", function()
-    -- Push the session environment into systemd --user and the dbus activation
-    -- environment before anything else starts. Portals and user services are
-    -- spawned by systemd, which otherwise never sees WAYLAND_DISPLAY et al --
-    -- that mismatch is the usual cause of slow first launches and dead portals.
-    hl.exec_cmd("systemctl --user import-environment $(env | cut -d'=' -f 1)")
-    hl.exec_cmd("dbus-update-activation-environment --systemd --all")
+    -- No systemctl/dbus-update-activation-environment calls here: Hyprland
+    -- now exports WAYLAND_DISPLAY et al to systemd --user and the dbus
+    -- activation environment itself, and starts hyprland-session.target.
+    -- The wiki asks for leftover manual calls to be removed.
 
     -- Status bar (waybar — Rose Pine themed in ~/.config/waybar)
     hl.exec_cmd("waybar")

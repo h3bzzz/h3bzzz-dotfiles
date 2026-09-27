@@ -53,7 +53,11 @@ run_cmd() {
             systemctl suspend
             ;;
         --logout)
-            hyprctl dispatch exit
+            if command -v hyprshutdown >/dev/null 2>&1 && hyprshutdown --help >/dev/null 2>&1; then
+                hyprshutdown -t 'Logging out...'
+            else
+                hyprctl dispatch 'hl.dsp.exit()'
+            fi
             ;;
     esac
 }
