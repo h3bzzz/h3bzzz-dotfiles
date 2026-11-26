@@ -62,6 +62,9 @@ set -uo pipefail
 DOTFILES="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONFIG="${XDG_CONFIG_HOME:-$HOME/.config}"
 WALLPAPERS="$HOME/Pictures/wallpapers"
+# USER is not guaranteed to be set (containers, a chroot from the install
+# media); under `set -u` reading it bare aborted the script before --help.
+USER="${USER:-$(id -un)}"
 TARGET_USER="${SUDO_USER:-$USER}"
 TARGET_HOME="$(eval echo "~$TARGET_USER")"
 [ -n "${HOME:-}" ] && TARGET_HOME="$HOME" # we run as the user, not root
