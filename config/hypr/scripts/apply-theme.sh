@@ -110,6 +110,16 @@ fi
 # itself when matugen rewrites Colors.qml. (There is no `qs reload` subcommand
 # in 0.3.1 -- only log/list/kill/ipc -- so nothing to call here.)
 
+# wob reads wob.ini only at startup. Restart it so the volume / brightness
+# OSD picks up the new palette; osd-wob.sh recreates the fifo itself.
+# The old `tail -f fifo` feeder is stopped too, or it would linger holding the
+# deleted fifo.
+if pgrep -x wob >/dev/null 2>&1; then
+    pkill -f "tail -f /tmp/${HYPRLAND_INSTANCE_SIGNATURE:-hypr}.wob"
+    pkill -x wob
+    setsid -f "$HOME/.config/hypr/scripts/osd-wob.sh" >/dev/null 2>&1
+fi
+
 # Ghostty watches its config file; SIGUSR2 asks every window to re-read it.
 if pgrep -x ghostty >/dev/null 2>&1; then
     pkill -USR2 -x ghostty

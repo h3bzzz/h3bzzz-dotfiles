@@ -20,7 +20,9 @@ send_wob() {
         value=100
     fi
 
-    if [[ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" && -p "$fifo" ]]; then
+    # pgrep: with no wob reading the fifo a write would block forever and hang
+    # the key.
+    if [[ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" && -p "$fifo" ]] && pgrep -x wob >/dev/null; then
         printf '%s\n' "$value" > "$fifo"
     fi
 }

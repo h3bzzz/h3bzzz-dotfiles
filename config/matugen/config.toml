@@ -32,6 +32,18 @@ output_path = '~/.config/swaync/colors.css'
 input_path  = '~/.config/matugen/templates/rofi-colors.rasi'
 output_path = '~/.config/rofi/launchers/type-3/shared/colors.rasi'
 
+# The full-screen power menu shares the launcher's slot names but carries its
+# own translucent panel colours.
+[templates.rofi-powermenu]
+input_path  = '~/.config/matugen/templates/rofi-powermenu-colors.rasi'
+output_path = '~/.config/rofi/powermenu/type-4/shared/colors.rasi'
+
+# Volume / brightness OSD. wob reads this only at startup, so apply-theme.sh
+# restarts it.
+[templates.wob]
+input_path  = '~/.config/matugen/templates/wob.ini'
+output_path = '~/.config/wob/wob.ini'
+
 [templates.hyprland]
 input_path  = '~/.config/matugen/templates/hypr-colors.lua'
 output_path = '~/.config/hypr/lua/colors.lua'

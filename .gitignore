@@ -13,6 +13,7 @@ config/zsh/secrets.zsh
 config/waybar/colors.css
 config/swaync/colors.css
 config/rofi/launchers/type-3/shared/colors.rasi
+config/rofi/powermenu/type-4/shared/colors.rasi
 config/hypr/lua/colors.lua
 config/hypr/colors.conf
 config/quickshell/Colors.qml
