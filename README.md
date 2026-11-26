@@ -132,7 +132,7 @@ MATUGEN_SCHEME=scheme-content apply-theme.sh   # or override the scheme
 ## Install
 
 Target is **Arch Linux + Hyprland**. Other distros get a best-effort package
-pass; `matugen` and `quickshell` are AUR-only and required.
+pass; the only AUR package is the optional `oh-my-posh-bin`.
 
 ```bash
 git clone https://github.com/h3bzzz/h3bzzz-dotfiles ~/h3bzzz-dotfiles
@@ -199,6 +199,28 @@ blocks commits containing credential-shaped strings; `install.sh` enables it.
 
 ---
 
+## Keeping it current: `rice`
+
+`install.sh` gets a bare Arch box to a working desktop once. `rice` (symlinked
+into `~/.local/bin` by the installer) is for every day after that.
+
+| Command | What it does |
+| --- | --- |
+| `rice update` | Snapshot (snapper or timeshift, if present) → `git pull` → `pacman -Syu` → AUR → pending migrations → re-theme. Logged to `~/.local/state/rice/`. `--dry-run` shows what would happen. |
+| `rice migrate` | Runs `migrations/*.sh` that have not run on this machine. Each brings an already-installed machine up to what a fresh install gives, runs once, and is recorded in `~/.local/state/rice/migrations/`. `--pending` only lists them. |
+| `rice doctor` | Read-only health check: required commands, optional features, session services, config errors, theme outputs, pending migrations. |
+| `rice backup [DIR]` | One passphrase-encrypted archive (gpg, AES256) of `~/.ssh`, `~/.gnupg`, `secrets.zsh`, `.gitconfig` and the installed-package lists. Written to `~/rice-backups` by default — **not** into this public repo. Extra paths go in `~/.config/rice/backup-paths`. |
+| `rice restore FILE` | Lists the archive, asks, unpacks into `$HOME` and fixes key permissions. |
+
+Bare box to "my machine again": `./install.sh --deps --link`, then
+`rice restore /path/to/rice-backup-….tar.gz.gpg`.
+
+Installer extras: `--extras=snapshots` sets up snapper + snap-pac on btrfs
+(plus grub-btrfs when GRUB is the bootloader) or timeshift on other
+filesystems; `--extras=recon` installs ProjectDiscovery's tools through their
+own manager `pdtm`, with no AUR involved; `--extras=firewall` now applies a
+deny-incoming / allow-outgoing policy instead of only enabling the service.
+
 ## Keybinds
 
 `SUPER` is the mod key. Full list in `config/hypr/lua/binds.lua`.
@@ -217,6 +239,22 @@ blocks commits containing credential-shaped strings; `install.sh` enables it.
 | `SUPER + H/J/K/L` or arrows | Focus direction |
 | `SUPER + M` / `SUPER + SHIFT + M` | Toggle / move to scratchpad |
 | `SUPER + grave` | **Drop-down terminal** — ghostty's native quick terminal |
+| `SUPER + /` | **Keybind cheat sheet** — searchable, generated from the live binds |
+| `SUPER + D` | **Control centre** — clock, CPU/RAM/disk, volume, Wi-Fi/Bluetooth and every toggle as a tile |
+| `SUPER + X` | **Control menu** — the same toggles plus capture tools, as a searchable list |
+| `SUPER + CTRL + E` | Eye candy — frost blur, wobbly windows, glow (off by default) |
+| `SUPER + T` | Cycle this workspace's layout: dwindle → scrolling → monocle |
+| `SUPER + TAB` | Next window on the workspace (`SHIFT` for previous) |
+| `SUPER + SHIFT + F` / `SUPER + CTRL + F` | Fullscreen / maximize |
+| `SUPER + CTRL + H/J/K/L` or arrows | Move window in a direction |
+| `SUPER + ,` / `.` | Focus previous / next monitor (`SHIFT` moves the window there) |
+| `SUPER + SHIFT + R` | Start / stop a screen recording (`~/Videos/recordings`) |
+| `SUPER + SHIFT + T` | Copy text out of a screen region (OCR) |
+| `SUPER + SHIFT + Q` | Scan a QR code on screen |
+| `SUPER + ;` / `SUPER + C` | Emoji picker / calculator |
+| `SUPER + SHIFT + N` | Night light (also automatic from 20:00, `hyprsunset.conf`) |
+| `SUPER + CTRL + G` | Game mode — no animations, blur, shadows or gaps |
+| `SUPER + CTRL + I` / `P` / `N` | Caffeine / cycle power profile / do not disturb |
 | `y` (shell) | yazi file manager; quitting leaves the shell in that directory |
 | `SUPER + N` | Notification panel |
 | `SUPER + SHIFT + V` | Clipboard history |
@@ -279,7 +317,9 @@ template. Edit the template, never the generated `config.json`.
 | `CTRL + SHIFT + Z` | Zoom split |
 | `CTRL + SHIFT + F` | Search scrollback (`F3` / `SHIFT + F3` next / previous match) |
 | `CTRL + SHIFT + PageUp/Dn` | Jump to previous / next prompt |
-| `CTRL + SHIFT + O` | Write scrollback to a file and open it |
+| `CTRL + SHIFT + O` | Write scrollback to a file and open it (`CTRL + ALT + SHIFT + O` types the path instead) |
+| `CTRL + SHIFT + R` | Resize mode: `h/j/k/l` resize the split, `SHIFT` for big steps, `e` equalize, `ESC` leaves |
+| `CTRL + SHIFT + S` | Scroll mode: `j/k` line, `d/u` half page, `g/G` top/bottom, `[`/`]` prompts, `/` search, `ESC` leaves |
 | `CTRL + SHIFT + P` | Command palette |
 
 A command that runs longer than 30s in an unfocused surface raises a swaync
@@ -340,12 +380,14 @@ Change the **scheme** with `MATUGEN_SCHEME`. The default is `scheme-vibrant`;
 Installed by `./install.sh --deps`.
 
 **Repo:** hyprland, hyprpaper, hyprlock, hypridle, xdg-desktop-portal-hyprland,
-waybar, rofi-wayland, wofi, swaync, ghostty, cava, btop, neovim, tmux,
+waybar, quickshell, rofi, rofi-emoji, rofi-calc, wofi, swaync, hyprsunset,
+hyprshutdown, wf-recorder, tesseract, zbar, ghostty, cava, btop, neovim, tmux,
 imagemagick, jq, python, socat, cliphist, wl-clipboard, grim, slurp,
 brightnessctl, playerctl, pavucontrol, wireplumber, blueman, networkmanager,
-thunar, papirus-icon-theme, ttf-jetbrains-mono-nerd, noto-fonts-emoji, zsh
+matugen, thunar, papirus-icon-theme, ttf-jetbrains-mono-nerd, noto-fonts-emoji, zsh
 
-**AUR:** `matugen-bin`, `quickshell` — both required.
+**AUR:** `oh-my-posh-bin` only (optional; a binary fallback exists). `matugen`
+now comes from the official repos.
 
 **pipx:** [`terminaltexteffects`](https://github.com/ChrisBuilds/terminaltexteffects)
 for the screensaver.

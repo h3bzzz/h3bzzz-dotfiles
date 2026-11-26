@@ -1,0 +1,309 @@
+#!/usr/bin/env bash
+#
+# rice -- day-two maintenance for this desktop. install.sh takes a bare Arch
+# box to a working desktop once; this keeps an installed one current without
+# re-running it.
+#
+#   rice update [--dry-run]     snapshot -> pull -> upgrade -> migrate -> re-theme
+#   rice migrate [--pending]    run migrations/*.sh that have not run here yet
+#   rice doctor                 read-only health check of the whole setup
+#   rice backup [DIR]           encrypted archive of keys, secrets, package lists
+#   rice restore FILE           unpack such an archive into $HOME
+#   rice help
+#
+# State (migration markers, logs) lives in ~/.local/state/rice.
+
+set -uo pipefail
+
+SELF="$(readlink -f "${BASH_SOURCE[0]}")"
+REPO="$(cd "$(dirname "$SELF")/.." && pwd)"
+STATE="${XDG_STATE_HOME:-$HOME/.local/state}/rice"
+CONFIG="${XDG_CONFIG_HOME:-$HOME/.config}"
+mkdir -p "$STATE/migrations"
+
+if [ -t 1 ]; then
+    BOLD=$'\e[1m' RED=$'\e[31m' GRN=$'\e[32m' YLW=$'\e[33m' OFF=$'\e[0m'
+else
+    BOLD="" RED="" GRN="" YLW="" OFF=""
+fi
+say() { printf '%s==>%s %s\n' "$BOLD" "$OFF" "$*"; }
+ok() { printf '    %s+%s %s\n' "$GRN" "$OFF" "$*"; }
+warn() { printf '    %s!%s %s\n' "$YLW" "$OFF" "$*"; }
+err() { printf '    %sx%s %s\n' "$RED" "$OFF" "$*" >&2; }
+die() {
+    err "$*"
+    exit 1
+}
+have() { command -v "$1" >/dev/null 2>&1; }
+
+# ── migrate ──────────────────────────────────────────────────────────────
+# A migration is a script in migrations/, named YYYYMMDD-NN-what.sh, that
+# brings an already-installed machine up to what a fresh install.sh would
+# give. Each runs once per machine; success drops a marker in the state dir.
+# A failing migration stops the run and is retried next time, so migrations
+# must be safe to run twice.
+
+pending_migrations() {
+    local f
+    for f in "$REPO"/migrations/*.sh; do
+        [ -e "$f" ] || continue
+        [ -e "$STATE/migrations/$(basename "$f")" ] || printf '%s\n' "$f"
+    done
+}
+
+cmd_migrate() {
+    local mode="${1:-run}" f name
+    local -a todo=()
+    mapfile -t todo < <(pending_migrations)
+    if [ "${#todo[@]}" -eq 0 ]; then
+        ok "no pending migrations"
+        return 0
+    fi
+    for f in "${todo[@]}"; do
+        name="$(basename "$f")"
+        if [ "$mode" != run ]; then
+            printf '    pending  %s  -- %s\n' "$name" "$(sed -n '2s/^# *//p' "$f")"
+            continue
+        fi
+        say "migration $name"
+        if REPO="$REPO" bash "$f"; then
+            date -Is >"$STATE/migrations/$name"
+            ok "done"
+        else
+            err "failed -- fix the cause and run 'rice migrate' again"
+            return 1
+        fi
+    done
+}
+
+# ── update ───────────────────────────────────────────────────────────────
+
+snapshot() {
+    # Root-filesystem snapshot before the upgrade, when the machine has a
+    # snapshot tool. Rolling back a bad upgrade is then one command.
+    if have snapper && sudo snapper -c root get-config >/dev/null 2>&1; then
+        sudo snapper -c root create --description "rice update" && ok "snapper snapshot"
+    elif have timeshift; then
+        sudo timeshift --create --comments "rice update" --scripted >/dev/null && ok "timeshift snapshot"
+    else
+        warn "no snapshot tool (snapper/timeshift) -- upgrading without a rollback point"
+    fi
+}
+
+cmd_update() {
+    local dry=false
+    [ "${1:-}" = --dry-run ] && dry=true
+    local log
+    log="$STATE/update-$(date +%Y%m%d-%H%M%S).log"
+
+    if $dry; then
+        say "dry run -- nothing will be changed"
+        git -C "$REPO" status --short | grep -q . && warn "repo has local changes: 'git pull' would be skipped"
+        have snapper || have timeshift || warn "no snapshot tool"
+        say "would upgrade: $(pacman -Qu 2>/dev/null | wc -l) repo package(s) pending (as of last sync)"
+        cmd_migrate --pending
+        return 0
+    fi
+
+    exec > >(tee -a "$log") 2>&1
+    say "log: $log"
+
+    say "dotfiles"
+    if git -C "$REPO" status --short | grep -q .; then
+        warn "local changes in $REPO -- not pulling (commit or stash, then rerun)"
+    elif git -C "$REPO" rev-parse --abbrev-ref '@{u}' >/dev/null 2>&1; then
+        git -C "$REPO" pull --ff-only || warn "pull failed -- continuing with the current checkout"
+    fi
+
+    say "snapshot"
+    sudo -v || die "sudo is required to upgrade"
+    snapshot
+
+    say "system upgrade"
+    sudo pacman -Syu || die "pacman failed -- nothing after this point was run"
+    local helper
+    for helper in paru yay; do
+        if have "$helper"; then
+            "$helper" -Sua || warn "AUR upgrade failed"
+            break
+        fi
+    done
+
+    say "migrations"
+    cmd_migrate run || die "a migration failed"
+
+    say "theme"
+    if "$CONFIG/hypr/scripts/apply-theme.sh" >/dev/null 2>&1; then ok "palette regenerated"; else warn "apply-theme failed"; fi
+
+    if [ ! -d "/usr/lib/modules/$(uname -r)" ]; then
+        warn "the running kernel was replaced -- reboot when convenient"
+    fi
+    say "done"
+}
+
+# ── doctor ───────────────────────────────────────────────────────────────
+
+cmd_doctor() {
+    local bad=0 c f
+    chk() { # chk "label" cmd...
+        local label="$1"
+        shift
+        if "$@" >/dev/null 2>&1; then ok "$label"; else
+            err "$label"
+            bad=$((bad + 1))
+        fi
+    }
+    soft() { # optional feature: warn, do not count
+        local label="$1"
+        shift
+        if "$@" >/dev/null 2>&1; then ok "$label"; else warn "$label"; fi
+    }
+
+    say "core commands"
+    for c in Hyprland hyprctl hyprlock hypridle hyprpaper waybar quickshell rofi swaync-client \
+        ghostty matugen grim slurp wl-copy cliphist brightnessctl playerctl wpctl; do
+        chk "$c" have "$c"
+    done
+
+    say "optional features"
+    soft "night light (hyprsunset)" have hyprsunset
+    soft "screen recording (wf-recorder or gpu-screen-recorder)" bash -c 'command -v wf-recorder || command -v gpu-screen-recorder'
+    soft "OCR (tesseract)" have tesseract
+    soft "QR scan (zbar)" have zbarimg
+    soft "emoji picker (rofi-emoji)" test -e /usr/lib/rofi/emoji.so
+    soft "calculator (rofi-calc)" test -e /usr/lib/rofi/calc.so
+    soft "graceful exit (hyprshutdown)" have hyprshutdown
+    soft "snapshots (snapper or timeshift)" bash -c 'command -v snapper || command -v timeshift'
+
+    say "session"
+    if [ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]; then
+        # shellcheck disable=SC2016
+        chk "hyprland config has no errors" bash -c '[ -z "$(hyprctl configerrors)" ]'
+        chk "polkit agent running" systemctl --user is-active hyprpolkitagent.service
+        chk "pipewire running" systemctl --user is-active pipewire.service
+        chk "notification daemon running" pgrep -x swaync
+        chk "bar running" pgrep -x waybar
+        chk "quickshell running" pgrep -f 'quickshell'
+    else
+        warn "not inside a Hyprland session -- session checks skipped"
+    fi
+    have ghostty && chk "ghostty config valid" ghostty +validate-config
+
+    say "theme outputs"
+    for f in waybar/colors.css ghostty/themes/matugen hypr/lua/colors.lua quickshell/Colors.qml; do
+        chk "$f" test -s "$CONFIG/$f"
+    done
+
+    say "files the config refers to"
+    for f in "$HOME/.local/bin/daily-verse" "$HOME/.local/bin/daily-verse-boot" \
+        "$HOME/.local/bin/daily-verse-resume" "$HOME/.local/bin/ff"; do
+        soft "$f" test -x "$f"
+    done
+
+    say "migrations"
+    cmd_migrate --pending
+
+    echo
+    if [ "$bad" -eq 0 ]; then
+        ok "${BOLD}healthy${OFF} (warnings above are optional features)"
+    else
+        err "$bad problem(s)"
+        return 1
+    fi
+}
+
+# ── backup / restore ─────────────────────────────────────────────────────
+# What a fresh machine cannot get from the public repo: keys, secrets and the
+# record of what was installed. One passphrase-encrypted file (gpg, AES256),
+# written OUTSIDE the repo by default -- the repo is public, and an encrypted
+# archive of private keys still does not belong in it.
+#
+# Extra paths (relative to $HOME, one per line) go in
+# ~/.config/rice/backup-paths.
+
+BACKUP_DEFAULTS=(.ssh .gnupg .config/zsh/secrets.zsh .config/rice .gitconfig)
+
+gpg_pass_args() {
+    # RICE_PASSPHRASE_FILE makes backup/restore scriptable (and testable);
+    # without it gpg prompts on the terminal.
+    if [ -n "${RICE_PASSPHRASE_FILE:-}" ]; then
+        printf '%s\n' --batch --pinentry-mode loopback --passphrase-file "$RICE_PASSPHRASE_FILE"
+    fi
+}
+
+cmd_backup() {
+    have gpg || die "gpg is required"
+    local dest="${1:-$HOME/rice-backups}" out stage p
+    local -a paths=() pass=()
+    mkdir -p "$dest"
+    out="$dest/rice-backup-$(uname -n)-$(date +%Y%m%d-%H%M%S).tar.gz.gpg"
+    stage="$(mktemp -d)"
+    trap 'rm -rf "$stage"' RETURN
+
+    # Package lists travel inside the archive so a restore can show exactly
+    # what this machine had.
+    mkdir -p "$stage/.local/state/rice"
+    pacman -Qqen >"$stage/.local/state/rice/pkgs-repo.txt" 2>/dev/null
+    pacman -Qqem >"$stage/.local/state/rice/pkgs-aur.txt" 2>/dev/null
+
+    for p in "${BACKUP_DEFAULTS[@]}"; do [ -e "$HOME/$p" ] && paths+=("$p"); done
+    if [ -f "$CONFIG/rice/backup-paths" ]; then
+        while IFS= read -r p; do
+            case "$p" in '' | '#'*) continue ;; esac
+            if [ -e "$HOME/$p" ]; then paths+=("$p"); else warn "skipping missing path: $p"; fi
+        done <"$CONFIG/rice/backup-paths"
+    fi
+
+    say "backing up: ${paths[*]} + package lists"
+    mapfile -t pass < <(gpg_pass_args)
+    # Sockets (gpg-agent) cannot be archived and are not needed.
+    if tar -C "$HOME" --exclude='S.*' --warning=no-file-ignored -czf - "${paths[@]}" \
+        -C "$stage" .local/state/rice |
+        gpg "${pass[@]}" --symmetric --cipher-algo AES256 -o "$out"; then
+        chmod 600 "$out"
+        ok "$out ($(du -h "$out" | cut -f1))"
+        warn "keep this file off the public repo; copy it to a USB stick or private storage"
+    else
+        rm -f "$out"
+        die "backup failed"
+    fi
+}
+
+cmd_restore() {
+    local file="${1:-}" target="${RICE_RESTORE_TARGET:-$HOME}" ans
+    local -a pass=()
+    [ -f "$file" ] || die "usage: rice restore FILE"
+    have gpg || die "gpg is required"
+    mapfile -t pass < <(gpg_pass_args)
+
+    say "contents of $file"
+    gpg "${pass[@]}" --decrypt "$file" 2>/dev/null | tar -tzf - | sed 's/^/    /' | head -40 ||
+        die "could not decrypt (wrong passphrase?)"
+
+    if [ -z "${RICE_PASSPHRASE_FILE:-}" ]; then
+        read -r -p "  Restore into $target, overwriting files of the same name? [y/N]: " ans
+        case "$ans" in y | Y | yes) ;; *) die "aborted" ;; esac
+    fi
+    mkdir -p "$target"
+    gpg "${pass[@]}" --decrypt "$file" 2>/dev/null | tar -C "$target" -xzf - || die "restore failed"
+    # ssh and gpg refuse keys with loose permissions.
+    [ -d "$target/.ssh" ] && chmod 700 "$target/.ssh" && find "$target/.ssh" -type f ! -name '*.pub' -exec chmod 600 {} +
+    [ -d "$target/.gnupg" ] && chmod 700 "$target/.gnupg"
+    ok "restored into $target"
+    ok "package lists: $target/.local/state/rice/pkgs-{repo,aur}.txt"
+}
+
+# ── dispatch ─────────────────────────────────────────────────────────────
+
+case "${1:-help}" in
+    update) shift; cmd_update "$@" ;;
+    migrate)
+        shift
+        case "${1:-}" in --pending | --dry-run) cmd_migrate pending ;; *) cmd_migrate run ;; esac
+        ;;
+    doctor) cmd_doctor ;;
+    backup) shift; cmd_backup "$@" ;;
+    restore) shift; cmd_restore "$@" ;;
+    help | -h | --help) sed -n '3,15p' "$SELF" | sed 's/^# \{0,1\}//' ;;
+    *) die "unknown command: $1 (try: rice help)" ;;
+esac

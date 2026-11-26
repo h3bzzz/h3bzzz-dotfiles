@@ -33,7 +33,9 @@
 #   --bt=yes|no|auto  bluetooth stack (auto = yes on laptop)
 #   --aur=yay|paru|auto|none
 #   --langs=all|none|go,zig,node,python,rust,lua,c
-#   --extras=none|printing,firewall,docker,ssh
+#   --extras=none|printing,firewall,docker,ssh,snapshots,recon
+#                     snapshots = snapper on btrfs, timeshift elsewhere
+#                     recon     = ProjectDiscovery tools via pdtm (no AUR)
 #   --no-reboot       don't offer a reboot at the end
 #   -h | --help       this text
 #
@@ -50,7 +52,7 @@
 #         every change. Right if you intend to track or contribute the rice.
 #
 # Target: Arch Linux + Hyprland. Other distros get a best-effort warning and
-# are otherwise on their own for the AUR-only pieces (matugen-bin).
+# are otherwise on their own for the AUR-only pieces (oh-my-posh-bin).
 #
 # Sudo: you type your password ONCE at the start. A background keep-alive
 # refreshes the timestamp so the rest of the run never re-prompts.
@@ -311,7 +313,7 @@ run_wizard() {
         EXTRAS="$WANT_EXTRAS"
     elif [ "$INTERACTIVE" = true ]; then
         printf '\n%sOptional extras?%s (comma-separated, or none)\n' "$BOLD" "$OFF"
-        printf '  printing  firewall  docker  ssh\n\n'
+        printf '  printing  firewall  docker  ssh  snapshots  recon\n\n'
         local reply2
         read -r -p "  Choice [none]: " reply2
         EXTRAS="${reply2:-none}"
@@ -404,9 +406,10 @@ PKGS_GPU_VM=(xf86-video-vmware spice-vdagent)
 # the auth dialog for privileged GUI actions (mounts, nm-editor changes).
 PKGS_HYPRLAND=(
     hyprland hyprpaper hyprlock hypridle hyprshot hyprpicker hyprpolkitagent hyprcursor
+    hyprshutdown hyprsunset matugen
     xdg-desktop-portal-hyprland xdg-desktop-portal xdg-desktop-portal-gtk
     qt5-wayland qt6-wayland
-    waybar quickshell rofi-wayland wofi swaync
+    waybar quickshell rofi rofi-emoji rofi-calc wofi swaync
     ghostty
 )
 
@@ -417,6 +420,7 @@ PKGS_HYPRLAND=(
 # volume/brightness slider, libnotify provides notify-send.
 PKGS_CAPTURE=(
     grim slurp satty swayimg hyprpicker
+    wf-recorder tesseract tesseract-data-eng zbar
     cliphist wl-clipboard wl-clip-persist
     wob libnotify
 )
@@ -511,11 +515,11 @@ PKGS_EXTRA_FIREWALL=(ufw)
 PKGS_EXTRA_DOCKER=(docker docker-compose)
 PKGS_EXTRA_SSH=(openssh)
 
-# AUR. quickshell/hyprshutdown/wl-clip-persist have all moved to extra, so
-# only the true AUR-only pieces remain: matugen (wallpaper->palette, REQUIRED
-# -- waybar will not start without colors.css) and oh-my-posh-bin (prompt;
-# has a manual binary fallback so it is best-effort, not fatal).
-PKGS_AUR=(matugen-bin oh-my-posh-bin)
+# AUR. quickshell, hyprshutdown, wl-clip-persist and matugen have all moved to
+# extra, so the only AUR piece left is oh-my-posh-bin (prompt), and that has a
+# manual binary fallback -- nothing the desktop REQUIRES comes from the AUR.
+# Keep it that way: AUR packages were hijacked at scale in 2026.
+PKGS_AUR=(oh-my-posh-bin)
 
 aur_helper() {
     case "$AUR_PREF" in
@@ -554,7 +558,7 @@ ensure_aur_helper() {
         ans="$(ask_yesno "No AUR helper found. Build '$want' from the AUR?" y)"
         [ "$ans" = yes ] || return 1
     else
-        say "No AUR helper found -- building $want (required for matugen)"
+        say "No AUR helper found -- building $want (for oh-my-posh-bin)"
     fi
     local tmp
     tmp="$(mktemp -d)"
@@ -654,15 +658,15 @@ install_deps() {
     extras_wanted docker && pacman_install "docker" "${PKGS_EXTRA_DOCKER[@]}"
     extras_wanted ssh && pacman_install "ssh" "${PKGS_EXTRA_SSH[@]}"
 
-    # 8. AUR (matugen is REQUIRED -- waybar @imports its output)
+    # 8. AUR (best-effort: oh-my-posh has a binary fallback below)
     local helper=""
     helper="$(ensure_aur_helper || true)"
     if [ -n "$helper" ]; then
         say "Installing AUR packages ($helper): ${PKGS_AUR[*]}"
         "$helper" -S --needed --noconfirm "${PKGS_AUR[@]}" ||
-            warn "some AUR packages failed -- matugen is REQUIRED, retry manually"
+            warn "some AUR packages failed -- retry manually: ${PKGS_AUR[*]}"
     else
-        warn "No AUR helper -- matugen-bin is REQUIRED and AUR-only:"
+        warn "No AUR helper -- skipping ${PKGS_AUR[*]}. To install one:"
         warn "  git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si"
         warn "  yay -S ${PKGS_AUR[*]}"
     fi
@@ -789,6 +793,76 @@ install_zvm() {
     fi
 }
 
+# ── optional extras that need more than a package list ───────────────────
+
+# A firewall that is merely "enabled" with no policy protects nothing. Deny
+# inbound, allow outbound; rate-limit ssh when the ssh extra is also chosen.
+setup_firewall_rules() {
+    extras_wanted firewall || return 0
+    command -v ufw >/dev/null 2>&1 || return 0
+    say "Firewall policy"
+    sudo ufw default deny incoming >/dev/null && sudo ufw default allow outgoing >/dev/null
+    extras_wanted ssh && sudo ufw limit ssh >/dev/null
+    if sudo ufw --force enable >/dev/null; then ok "ufw: deny incoming, allow outgoing"; else warn "ufw enable failed"; fi
+}
+
+# Rollback points for `rice update`. On btrfs: snapper, with snap-pac taking a
+# snapshot around every pacman transaction (and grub-btrfs listing them in the
+# boot menu when GRUB is the bootloader). On anything else: timeshift, which
+# `rice update` calls on demand. Nothing here touches the bootloader config
+# or the partition layout.
+setup_snapshots() {
+    extras_wanted snapshots || return 0
+    say "Snapshots"
+    local fstype
+    fstype="$(findmnt -no FSTYPE / 2>/dev/null)"
+    if [ "$fstype" = btrfs ]; then
+        pacman_install "snapper" snapper snap-pac
+        if sudo snapper -c root get-config >/dev/null 2>&1; then
+            ok "snapper root config already present"
+        elif sudo snapper -c root create-config / 2>/dev/null; then
+            # Keep ten numbered snapshots; no hourly timeline filling the disk.
+            sudo snapper -c root set-config TIMELINE_CREATE=no NUMBER_LIMIT=10 NUMBER_LIMIT_IMPORTANT=5
+            ok "snapper root config created"
+        else
+            warn "snapper create-config failed (an existing /.snapshots subvolume is the"
+            warn "usual cause) -- see https://wiki.archlinux.org/title/Snapper"
+        fi
+        sudo systemctl enable --now snapper-cleanup.timer >/dev/null 2>&1
+        if [ -d /boot/grub ]; then
+            pacman_install "grub-btrfs" grub-btrfs inotify-tools
+            sudo systemctl enable --now grub-btrfsd.service >/dev/null 2>&1 &&
+                ok "snapshots appear in the GRUB menu"
+        fi
+    else
+        pacman_install "timeshift" timeshift
+        ok "root is $fstype: timeshift (rsync) -- 'rice update' snapshots before upgrading"
+        warn "run 'sudo timeshift --create' once to choose the snapshot device"
+    fi
+}
+
+# Recon tooling without the AUR: ProjectDiscovery ships its own manager, pdtm,
+# which downloads signed release binaries into ~/.pdtm/go/bin.
+setup_recon() {
+    extras_wanted recon || return 0
+    say "Recon tooling (pdtm)"
+    if ! command -v go >/dev/null 2>&1; then
+        warn "go is not installed -- add 'go' to --langs, or: sudo pacman -S go"
+        return 0
+    fi
+    pacman_install "recon deps" libpcap nmap
+    local gobin="${GOBIN:-${GOPATH:-$HOME/go}/bin}"
+    if go install github.com/projectdiscovery/pdtm/cmd/pdtm@latest; then
+        if "$gobin/pdtm" -i subfinder,httpx,nuclei,dnsx,naabu,katana; then
+            ok "subfinder httpx nuclei dnsx naabu katana -> ~/.pdtm/go/bin"
+        else
+            warn "pdtm could not install every tool -- rerun: pdtm -i <name>"
+        fi
+    else
+        warn "could not build pdtm"
+    fi
+}
+
 enable_services() {
     say "Enabling services"
     # System services. enable --now when already booted with systemd; plain
@@ -875,11 +949,11 @@ EOF
 vt = 1
 
 [default_session]
-command = "tuigreet --time --remember --remember-user-session --cmd Hyprland"
+command = "tuigreet --time --remember --remember-user-session --cmd start-hyprland"
 user = "greeter"
 
 [initial_session]
-command = "Hyprland"
+command = "start-hyprland"
 user = "$TARGET_USER"
 EOF
     fi
@@ -1039,27 +1113,29 @@ EOF
 
 deploy_wob_config() {
     # wob has no default config; without wob.ini the volume/brightness OSD
-    # silently never appears. Colours are Rose Pine defaults -- apply-theme
-    # does not manage this file, edit freely.
+    # silently never appears. This Rose Pine copy is only the stand-in until
+    # the first apply-theme.sh run, which regenerates it from the wallpaper
+    # (matugen/templates/wob.ini).
     local wob_ini="$CONFIG/wob/wob.ini"
     if [ ! -f "$wob_ini" ]; then
         mkdir -p "$(dirname "$wob_ini")"
         cat >"$wob_ini" <<'EOF'
 # wob OSD -- spawned per-session by ~/.config/hypr/scripts/osd-wob.sh.
 # volume.sh / brightness.sh write slider values into the per-instance fifo.
-anchor = "bottom"
+# Values are unquoted: wob's parser rejects quoted values outright.
+anchor = bottom
 margin = 32
 width = 320
 height = 28
 border_size = 2
 border_offset = 4
 bar_padding = 4
-border_color = "26233aFF"
-background_color = "191724EE"
-bar_color = "31748fee"
-overflow_background_color = "1f1d2eEE"
-overflow_bar_color = "c4a7e7ee"
-overflow_mode = "wrap"
+border_color = 26233aFF
+background_color = 191724EE
+bar_color = 31748fee
+overflow_background_color = 1f1d2eEE
+overflow_bar_color = c4a7e7ee
+overflow_mode = wrap
 EOF
         ok "wob.ini (OSD bar)"
     fi
@@ -1180,6 +1256,23 @@ STUB
             ok "default wallpaper: $(basename "$first")"
     fi
 
+    # `rice` (update / migrate / doctor / backup). It reads migrations/ from
+    # this checkout, so it is always a symlink, even on a copy install.
+    mkdir -p "$HOME/.local/bin"
+    ln -sfn "$DOTFILES/bin/rice" "$HOME/.local/bin/rice" && ok "rice command -> ~/.local/bin/rice"
+
+    # A machine installed from this checkout already has everything the
+    # existing migrations would add. Mark them done so the first `rice update`
+    # does not replay history; only migrations added later will run.
+    if $DO_DEPS; then
+        local mig_state="${XDG_STATE_HOME:-$HOME/.local/state}/rice/migrations" mig
+        mkdir -p "$mig_state"
+        for mig in "$DOTFILES"/migrations/*.sh; do
+            [ -e "$mig" ] || continue
+            [ -e "$mig_state/$(basename "$mig")" ] || date -Is >"$mig_state/$(basename "$mig")"
+        done
+    fi
+
     # Credential guard, for the tracked install only -- a copy install never
     # commits back, so the repo's hooks are none of its business.
     if [ "$MODE" = link ] && git -C "$DOTFILES" rev-parse --git-dir >/dev/null 2>&1; then
@@ -1203,7 +1296,7 @@ generate_theme() {
     say "Generating the palette from the current wallpaper"
     if ! command -v matugen >/dev/null 2>&1; then
         err "matugen missing -- the palette cannot be generated."
-        err "Install it (yay -S matugen-bin), then run:"
+        err "Install it (sudo pacman -S matugen), then run:"
         err "  ~/.config/hypr/scripts/apply-theme.sh"
         return 1
     fi
@@ -1296,7 +1389,8 @@ verify_shell() {
         warn "MISSING: ~/.oh-my-zsh"
         fail=1
     }
-    local ZSH_DIR="${ZSH:-$HOME/.oh-my-zsh}" CUSTOM="${ZSH_CUSTOM:-$ZSH_DIR/custom}" p where stock
+    local ZSH_DIR="${ZSH:-$HOME/.oh-my-zsh}"
+    local CUSTOM="${ZSH_CUSTOM:-$ZSH_DIR/custom}" p where stock
     for p in "${REQUIRED_OMZ_CUSTOM[@]}"; do
         if [ "$p" = powerlevel10k ]; then
             where="$CUSTOM/themes/$p"
@@ -1455,13 +1549,15 @@ if $DO_DEPS; then
     printf '\n%sPlan:%s cpu=%s gpu=%s form=%s bt=%s greeter=%s langs=%s extras=%s aur=%s\n\n' \
         "$BOLD" "$OFF" "$CPU" "$GPU" "$FORM" "$WANT_BT_FINAL" "$GREETER" "$LANGS" "$EXTRAS" "$AUR_PREF"
     if [ "$INTERACTIVE" = true ]; then
-        local go
         read -r -p "  Proceed? [Y/n]: " go
         case "${go:-Y}" in n | N | no) die "aborted" ;; esac
     fi
     sudo_bootstrap
     install_deps
     deploy_system_files
+    setup_firewall_rules
+    setup_snapshots
+    setup_recon
 fi
 
 if $DO_DEPLOY; then
