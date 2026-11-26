@@ -192,6 +192,12 @@
     "icon-size": 18,
     "spacing": 10
   },
+  "custom/recording": {
+    "exec": "~/.config/hypr/scripts/capture.sh waybar",
+    "return-type": "json",
+    "interval": 2,
+    "on-click": "~/.config/hypr/scripts/capture.sh record"
+  },
   "custom/notification": {
     "tooltip": false,
     "format": "{icon}",

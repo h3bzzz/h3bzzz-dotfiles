@@ -26,6 +26,7 @@
     "bluetooth",
     "network",
     "battery",
+    "custom/recording",
     "custom/notification",
     "tray",
     "custom/power"

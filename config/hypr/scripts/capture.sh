@@ -5,7 +5,8 @@
 #   capture.sh qr       select a region, copy the QR / barcode payload (zbar)
 #   capture.sh record   toggle a screen recording: first call asks for a
 #                       region (Escape = whole focused monitor), second stops
-#   capture.sh status   prints "recording" while one is running (for a bar)
+#   capture.sh status   prints "recording" while one is running
+#   capture.sh waybar   JSON for the waybar indicator (empty text = hidden)
 #
 # Everything degrades to a notification when a tool is missing rather than
 # failing silently behind a keybind.
@@ -85,8 +86,15 @@ case "${1:-}" in
     status)
         recording && echo recording
         ;;
+    waybar)
+        if recording; then
+            printf '{"text":"󰑊 REC","class":"recording","tooltip":"Recording -- click to stop"}\n'
+        else
+            printf '{"text":""}\n'
+        fi
+        ;;
     *)
-        echo "usage: capture.sh ocr|qr|record|status" >&2
+        echo "usage: capture.sh ocr|qr|record|status|waybar" >&2
         exit 2
         ;;
 esac

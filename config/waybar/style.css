@@ -455,3 +455,17 @@ tooltip label {
   font-weight: 700;
   border-radius: 4px;
 }
+
+/* Screen-recording indicator. Only present while capture.sh is recording
+   (the module prints empty text otherwise and waybar hides it). */
+#custom-recording.recording {
+    color: @love;
+    font-weight: bold;
+    padding: 0 10px;
+    animation: recording-pulse 1.6s ease-in-out infinite alternate;
+}
+
+@keyframes recording-pulse {
+    from { opacity: 1.0; }
+    to   { opacity: 0.45; }
+}
