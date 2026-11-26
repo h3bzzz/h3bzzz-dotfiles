@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # ~/.config/hypr/thornwatch/lib/layout.sh
 # Block-local centring for panels. Sourced, never executed.
 #

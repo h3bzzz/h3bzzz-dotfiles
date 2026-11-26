@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # ~/.config/hypr/thornwatch/lib/palette.sh
 # The wallpaper palette, and the gradient sets thornwatch hands to tte.
 # Sourced, never executed.

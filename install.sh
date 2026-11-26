@@ -107,7 +107,7 @@ for arg in "$@"; do
         DO_DEPLOY=false
         ;;
     --copy) MODE=copy ;;
-    --link) MODE=link ;;
+    --link) MODE="link" ;;
     --yes) ASSUME_YES=true ;;
     --no-reboot) NO_REBOOT=true ;;
     --cpu=*) WANT_CPU="${arg#--cpu=}" ;;
@@ -345,7 +345,7 @@ choose_mode() {
     local reply
     read -r -p "  Choice [1]: " reply
     case "${reply:-1}" in
-    2 | l | link) MODE=link ;;
+    2 | l | link) MODE="link" ;;
     *) MODE=copy ;;
     esac
     printf '\n'

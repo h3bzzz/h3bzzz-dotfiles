@@ -1,0 +1,24 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    container: archlinux:latest
+    steps:
+      - name: Install tools
+        run: pacman -Syu --noconfirm --needed git shellcheck lua python
+      - uses: actions/checkout@v4
+      # The container runs as root over a checkout owned by another uid; git
+      # refuses to read it (and lint.sh uses git ls-files) without this.
+      - name: Trust the checkout
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - name: Lint
+        run: tests/lint.sh

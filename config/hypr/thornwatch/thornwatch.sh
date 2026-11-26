@@ -234,7 +234,8 @@ while :; do
         "$effect"
     )
     if supports_gradient "$effect"; then
-        # shellcheck disable=SC2206  -- word splitting is the point here
+        # Word splitting is the point here.
+        # shellcheck disable=SC2206
         stops=( $(tw_gradient) )
         args+=(
             --final-gradient-stops "${stops[@]}"
