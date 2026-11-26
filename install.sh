@@ -845,6 +845,16 @@ deploy_system_files() {
     [ "$GREETER" = none ] && return 0
     say "Configuring login manager (greetd + $GREETER)"
 
+    # The themed greeter (ReGreet inside a throw-away Hyprland, LG as the main
+    # display, wallpaper/palette sync hook) lives in system/greetd/ with its
+    # own installer and rollback; the inline cage setup below is the fallback
+    # for checkouts without it.
+    if [ "$GREETER" = regreet ] && [ -x "$DOTFILES/system/greetd/install.sh" ]; then
+        sudo "$DOTFILES/system/greetd/install.sh" --user "$TARGET_USER"
+        ok "greetd + ReGreet (system/greetd/install.sh)"
+        return 0
+    fi
+
     # --- /etc/greetd/config.toml ---
     sudo mkdir -p /etc/greetd
     if [ -f /etc/greetd/config.toml ] && [ ! -f /etc/greetd/config.toml.pre-rice ]; then

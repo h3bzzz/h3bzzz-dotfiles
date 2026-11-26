@@ -1,0 +1,18 @@
+# greetd -- /etc/greetd/config.toml
+# Installed by h3bzzz-dotfiles/system/greetd/install.sh.
+#
+# The greeter is ReGreet running inside a throw-away Hyprland instance
+# (see greeter-session + hyprland.lua next to this file). Hyprland is used
+# instead of cage because cage cannot choose which monitor the login lands on;
+# the Hyprland config puts it on the LG and mirrors it to the ViewSonic.
+#
+# Recovery from tty3 (Ctrl+Alt+F3):
+#   sudo /home/h3bzzz/h3bzzz-dotfiles/system/greetd/install.sh --rollback
+# puts the old cage greeter back and restarts greetd.
+
+[terminal]
+vt = 1
+
+[default_session]
+command = "/etc/greetd/greeter-session"
+user = "greeter"

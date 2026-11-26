@@ -1,0 +1,164 @@
+#!/usr/bin/env bash
+# /usr/local/bin/sync-greeter-wallpaper
+#
+# Keep the greetd/ReGreet login screen following the desktop rice:
+#   1. render a blurred, darkened 1080p copy of the current wallpaper to
+#      /usr/share/backgrounds/greetd/current-wallpaper (what regreet.toml
+#      points at -- the `greeter` user cannot read anything under /home);
+#   2. splice the matugen palette (12 Rose Pine slots) into regreet.css
+#      between the ">>> matugen palette >>>" markers as GTK @define-color.
+#
+# Called by ~/.config/hypr/scripts/apply-theme.sh and set-wallpaper.sh as
+#   sudo -n /usr/local/bin/sync-greeter-wallpaper
+# (password-less via /etc/sudoers.d/10-greeter-wallpaper). Everything the
+# script reads from the user's home is validated before use; the ImageMagick
+# render itself runs as that user, not as root.
+#
+# Env overrides (used by install.sh / preview.sh, handy for testing):
+#   GREETER_SYNC_USER     user whose wallpaper/palette to follow (default: $SUDO_USER)
+#   GREETER_SYNC_WALL     wallpaper path or symlink
+#   GREETER_SYNC_PALETTE  matugen colors.json
+#   GREETER_SYNC_BG_DIR   where the rendered background goes
+#   GREETER_SYNC_CSS      stylesheet to splice the palette into
+#   GREETER_SYNC_SIZE     render size (default 1920x1080)
+set -uo pipefail
+
+TARGET_USER="${GREETER_SYNC_USER:-${SUDO_USER:-}}"
+if [[ -z "$TARGET_USER" ]]; then
+    TARGET_USER="$(id -un)"
+fi
+TARGET_HOME="$(getent passwd "$TARGET_USER" | cut -d: -f6)"
+if [[ -z "$TARGET_HOME" || ! -d "$TARGET_HOME" ]]; then
+    printf 'sync-greeter-wallpaper: no home directory for %s\n' "$TARGET_USER" >&2
+    exit 1
+fi
+
+WALL_LINK="${GREETER_SYNC_WALL:-$TARGET_HOME/.config/hypr/current-wallpaper}"
+PALETTE_SRC="${GREETER_SYNC_PALETTE:-$TARGET_HOME/.config/matugen/colors.json}"
+BG_DIR="${GREETER_SYNC_BG_DIR:-/usr/share/backgrounds/greetd}"
+BG_FILE="$BG_DIR/current-wallpaper"
+CSS_TARGET="${GREETER_SYNC_CSS:-/etc/greetd/regreet.css}"
+SIZE="${GREETER_SYNC_SIZE:-1920x1080}"
+BEGIN='/* >>> matugen palette >>> */'
+END='/* <<< matugen palette <<< */'
+SLOTS=(base surface overlay muted subtle text love gold rose pine foam iris)
+
+log()  { printf 'sync-greeter-wallpaper: %s\n' "$*"; }
+warn() { printf 'sync-greeter-wallpaper: %s\n' "$*" >&2; }
+
+# Run a command as the target user when we are root (so ImageMagick never
+# parses a user-supplied image with root privileges); plainly otherwise.
+as_user() {
+    if [[ "$(id -u)" -eq 0 && "$TARGET_USER" != root ]]; then
+        runuser -u "$TARGET_USER" -- "$@"
+    else
+        "$@"
+    fi
+}
+
+# ── palette ───────────────────────────────────────────────────────────────
+
+declare -A PAL=()
+read_palette() {
+    [[ -f "$PALETTE_SRC" ]] || return 1
+    local line name hex
+    # Accept only lines of the shape   "slot": "#rrggbb"   -- nothing else from
+    # the file is ever interpreted.
+    while IFS= read -r line; do
+        if [[ "$line" =~ ^[[:space:]]*\"([a-z]+)\":[[:space:]]*\"#([0-9a-fA-F]{6})\" ]]; then
+            name="${BASH_REMATCH[1]}"; hex="${BASH_REMATCH[2],,}"
+            PAL["$name"]="#$hex"
+        fi
+    done < "$PALETTE_SRC"
+    local s
+    for s in "${SLOTS[@]}"; do
+        [[ -n "${PAL[$s]:-}" ]] || return 1
+    done
+    return 0
+}
+
+have_palette=false
+if read_palette; then
+    have_palette=true
+else
+    warn "palette $PALETTE_SRC missing or incomplete; keeping the previous colours"
+fi
+tint="${PAL[base]:-#0d141c}"
+
+# ── background ────────────────────────────────────────────────────────────
+
+wallpaper="$(readlink -f -- "$WALL_LINK" 2>/dev/null || true)"
+if [[ -n "$wallpaper" && -f "$wallpaper" && -r "$wallpaper" ]]; then
+    if ! command -v magick >/dev/null 2>&1; then
+        warn "ImageMagick (magick) not installed; copying the wallpaper unprocessed"
+        mkdir -p "$BG_DIR"
+        if cp -f -- "$wallpaper" "$BG_FILE.tmp" && mv -f -- "$BG_FILE.tmp" "$BG_FILE"; then
+            chmod 644 "$BG_FILE"; log "copied $wallpaper"
+        else
+            rm -f -- "$BG_FILE.tmp"; warn "could not copy wallpaper"
+        fi
+    else
+        work="$(mktemp -d)" || exit 1
+        trap 'rm -rf -- "$work"' EXIT
+        [[ "$(id -u)" -eq 0 ]] && chown "$TARGET_USER" "$work"
+        # Cover-fit to the panel size, then the lock-screen treatment: a wide
+        # blur, brightness pulled down, slightly desaturated, and washed toward
+        # the palette base so every wallpaper lands near the same dark value
+        # while its shapes and hues still read through the glass card.
+        if as_user magick "$wallpaper" -auto-orient \
+                -resize "${SIZE}^" -gravity center -extent "$SIZE" \
+                -blur 0x9 \
+                -modulate 74,96 \
+                -fill "$tint" -colorize 18 \
+                -attenuate 0.10 +noise Gaussian \
+                -quality 90 -strip "jpg:$work/bg.jpg" 2>"$work/err"; then
+            mkdir -p "$BG_DIR"
+            if cp -f -- "$work/bg.jpg" "$BG_FILE.tmp" && mv -f -- "$BG_FILE.tmp" "$BG_FILE"; then
+                chmod 644 "$BG_FILE"
+                log "rendered $wallpaper -> $BG_FILE"
+            else
+                rm -f -- "$BG_FILE.tmp"; warn "could not write $BG_FILE"
+            fi
+        else
+            warn "render failed: $(head -c 300 "$work/err" 2>/dev/null)"
+        fi
+    fi
+else
+    warn "no current wallpaper at $WALL_LINK; background left alone"
+fi
+
+# ── stylesheet splice ─────────────────────────────────────────────────────
+
+if [[ "$have_palette" != true ]]; then
+    exit 0
+fi
+if [[ ! -f "$CSS_TARGET" ]]; then
+    warn "$CSS_TARGET missing; palette not spliced"
+    exit 0
+fi
+if [[ "$(grep -cF -- "$BEGIN" "$CSS_TARGET")" -ne 1 || "$(grep -cF -- "$END" "$CSS_TARGET")" -ne 1 ]]; then
+    warn "$CSS_TARGET needs exactly one pair of palette markers; not spliced"
+    exit 0
+fi
+
+block=""
+for s in "${SLOTS[@]}"; do
+    block+="$(printf '@define-color %-7s %s;' "$s" "${PAL[$s]}")"$'\n'
+done
+
+tmp="$(mktemp -- "${CSS_TARGET}.XXXXXX")" || exit 1
+if awk -v begin="$BEGIN" -v end="$END" -v block="$block" '
+        $0 == begin { print; printf "%s", block; skipping = 1; next }
+        $0 == end   { skipping = 0 }
+        !skipping   { print }
+    ' "$CSS_TARGET" > "$tmp" && [[ -s "$tmp" ]]; then
+    chmod 644 "$tmp"
+    if mv -f -- "$tmp" "$CSS_TARGET"; then
+        log "spliced ${#SLOTS[@]} palette colours into $CSS_TARGET"
+    else
+        rm -f -- "$tmp"; warn "could not update $CSS_TARGET"; exit 1
+    fi
+else
+    rm -f -- "$tmp"; warn "splice failed; $CSS_TARGET untouched"; exit 1
+fi
+exit 0

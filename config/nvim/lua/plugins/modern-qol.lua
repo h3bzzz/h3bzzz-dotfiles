@@ -139,24 +139,6 @@ return {
     },
   },
 
-  -- render-markdown: Beautiful markdown rendering
-  {
-    "MeanderingProgrammer/render-markdown.nvim",
-    dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-tree/nvim-web-devicons" },
-    opts = {
-      code = {
-        sign = false,
-        width = "block",
-        right_pad = 1,
-      },
-      heading = {
-        sign = false,
-        icons = { "◉ ", "○ ", "✸ ", "✿ ", "▸ ", "▹ " },
-      },
-    },
-    ft = { "markdown", "norg", "rmd", "org", "codecompanion" },
-  },
-
   -- tiny-inline-diagnostic: Minimal inline diagnostics
   {
     "rachartier/tiny-inline-diagnostic.nvim",

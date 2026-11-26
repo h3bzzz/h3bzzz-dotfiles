@@ -1,0 +1,94 @@
+#!/usr/bin/env bash
+# /etc/greetd/greeter-session -- greetd's default_session command.
+#
+# Runs as the `greeter` user. Starts a minimal Hyprland instance with the
+# login-screen config, which spawns ReGreet on the LG and mirrors it to the
+# ViewSonic (hyprland.lua).
+#
+# Safety net -- the machine must ALWAYS come up with a usable login screen:
+#   * Hyprland exits non-zero                 -> old cage greeter
+#   * ReGreet never appears within 25 s       -> kill Hyprland, old cage greeter
+#     (covers a hang, a black screen, a config error)
+#   * ReGreet dies within 2 s of appearing     -> old cage greeter (a crash;
+#     nobody can type a password that fast)
+#   * ReGreet exits (normal login)            -> Hyprland is closed for sure,
+#     even if its own exit dispatch failed, so greetd can start the session.
+set -u
+
+# `greeter` has HOME=/ and may not write there. Hyprland/GTK want these.
+RT="${XDG_RUNTIME_DIR:-/tmp/greeter-$$}"
+export XDG_CACHE_HOME="$RT/greeter-cache"
+export XDG_CONFIG_HOME="$RT/greeter-config"
+export XDG_STATE_HOME="$RT/greeter-state"
+export XDG_DATA_HOME="$RT/greeter-data"
+mkdir -p "$XDG_CACHE_HOME" "$XDG_CONFIG_HOME" "$XDG_STATE_HOME" "$XDG_DATA_HOME" 2>/dev/null
+
+LOG="$XDG_STATE_HOME/greeter-session.log"
+log() { printf '%s greeter-session: %s\n' "$(date +%T)" "$*" | tee -a "$LOG" >&2; }
+
+hypr=""
+# Stop only *our* Hyprland: the child of the dbus-run-session started below.
+stop_hypr() { [ -n "$hypr" ] && pkill "-${1:-TERM}" -P "$hypr" -x Hyprland 2>/dev/null; }
+
+fallback() {
+    log "falling back to the cage greeter ($1)"
+    pkill -u "$(id -u)" -x regreet 2>/dev/null
+    stop_hypr TERM; sleep 1; stop_hypr KILL
+    exec dbus-run-session cage -s -mlast -d -- regreet
+}
+
+command -v Hyprland >/dev/null 2>&1 || fallback "Hyprland not installed"
+[ -r "${GREETER_HYPR_CONFIG:-/etc/greetd/hyprland.lua}" ] || fallback "greeter hyprland.lua missing"
+
+# GPU selection -- same rule as ~/.config/uwsm/env for the desktop session.
+# While the LG still hangs off the driverless AMD card (simpledrm) leave
+# auto-detection alone so that screen keeps working. Once both monitors are on
+# Intel ports, pin to the Intel GPU so the ghost simpledrm output is ignored.
+_intel_connected=$(grep -ls "^connected" /sys/class/drm/card*-DP-*/status \
+    /sys/class/drm/card*-HDMI-*/status /sys/class/drm/card*-eDP-*/status 2>/dev/null | wc -l)
+if [ "$_intel_connected" -ge 2 ] && [ -e /dev/dri/by-path/pci-0000:00:02.0-card ]; then
+    export AQ_DRM_DEVICES=/dev/dri/by-path/pci-0000:00:02.0-card
+fi
+unset _intel_connected
+
+dbus-run-session Hyprland --config "${GREETER_HYPR_CONFIG:-/etc/greetd/hyprland.lua}" >"$XDG_STATE_HOME/hyprland.out" 2>&1 &
+hypr=$!
+
+me=$(id -u)
+seen=0          # ReGreet has been seen running
+seen_at=0
+tick=0          # half-second ticks since start
+reason=""
+while kill -0 "$hypr" 2>/dev/null; do
+    if pgrep -u "$me" -x regreet >/dev/null 2>&1; then
+        if [ "$seen" -eq 0 ]; then seen=1; seen_at=$tick; log "regreet is up"; fi
+    elif [ "$seen" -eq 1 ]; then
+        # ReGreet is gone. Give Hyprland 3 s to close itself, then close it.
+        lived=$(( tick - seen_at ))   # half-second ticks
+        for _ in 1 2 3 4 5 6; do kill -0 "$hypr" 2>/dev/null || break; sleep 0.5; done
+        stop_hypr TERM
+        for _ in 1 2 3 4; do kill -0 "$hypr" 2>/dev/null || break; sleep 0.5; done
+        stop_hypr KILL
+        wait "$hypr" 2>/dev/null
+        if [ "$lived" -lt 4 ]; then fallback "regreet died after $lived ticks"; fi
+        log "regreet exited after $lived ticks; done"
+        exit 0
+    elif [ "$tick" -ge 50 ]; then
+        reason="regreet did not start within 25 s"
+        break
+    fi
+    sleep 0.5
+    tick=$((tick + 1))
+done
+
+[ -n "$reason" ] && fallback "$reason"
+
+# Hyprland exited before ReGreet was ever seen running, or on its own.
+wait "$hypr"; rc=$?
+if [ "$rc" -ne 0 ] || [ "$seen" -eq 0 ]; then
+    fallback "Hyprland exited with $rc (regreet seen: $seen)"
+fi
+if [ $((tick - seen_at)) -lt 4 ]; then
+    fallback "regreet and Hyprland quit right after start"
+fi
+exit 0

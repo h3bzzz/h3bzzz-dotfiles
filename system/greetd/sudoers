@@ -1,0 +1,6 @@
+# /etc/sudoers.d/10-greeter-wallpaper
+# Let the desktop user refresh the login-screen wallpaper/palette without a
+# password (apply-theme.sh / set-wallpaper.sh call `sudo -n`). The script is
+# root-owned and takes no arguments, so this grants nothing else.
+# Installed by h3bzzz-dotfiles/system/greetd/install.sh.
+h3bzzz ALL=(root) NOPASSWD: /usr/local/bin/sync-greeter-wallpaper

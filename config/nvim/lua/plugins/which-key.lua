@@ -123,6 +123,9 @@ return {
       { "<leader>tv", desc = "Vertical terminal" },
       { "<leader>tp", desc = "Theme picker" },
       
+      -- Markdown group (buffer-local maps come from plugins/markdown.lua)
+      { "<leader>m", group = "Markdown", icon = "📝" },
+
       -- Theme/UI group
       { "<leader>u", group = "UI", icon = "🎨" },
       { "<leader>uu", desc = "Undo tree" },

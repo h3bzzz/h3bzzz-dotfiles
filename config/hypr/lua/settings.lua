@@ -38,13 +38,33 @@ local function rgb(slot)
 end
 
 -- ============================================================
--- Monitor: use preferred mode for any output
+-- Monitors
 -- ============================================================
+--
+-- Two 1080p60 panels side by side, both meant to hang off the Intel HD 630
+-- (the AMD Turks card has no usable driver -- see ~/.config/uwsm/env).
+--
+-- The LG is the main display: it owns the origin (0x0), so it is monitor
+-- ID 0, gets workspace 1 and the initial focus, and is what anything that
+-- assumes "primary = (0,0)" sees. It is matched by the catch-all because its
+-- connector name changes with the cabling -- "Unknown-1" while it hangs off
+-- the AMD card's firmware framebuffer, DP-1/DP-2/HDMI-A-1 once on the Intel
+-- board. The ViewSonic VX2252 (DP-3) is secondary, pinned to the right.
+-- Fixed positions on purpose: "auto-right" would put DP-3 at 0x0 if it came
+-- up first and the LG would then land on top of it. Neither panel does VRR.
+-- The login screen (/etc/greetd/hyprland.lua) uses the same layout.
 
 hl.monitor({
     output   = "",
     mode     = "preferred",
-    position = "auto",
+    position = "0x0",
+    scale    = 1,
+})
+
+hl.monitor({
+    output   = "DP-3",
+    mode     = "1920x1080@60",
+    position = "1920x0",
     scale    = 1,
 })
 

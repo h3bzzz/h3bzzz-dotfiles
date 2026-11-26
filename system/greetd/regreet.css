@@ -1,0 +1,380 @@
+/* ReGreet stylesheet -- /etc/greetd/regreet.css
+ *
+ * Same language as the lock screen (hyprlock.conf): a heavily blurred, dark
+ * wallpaper, one translucent glass card, a thin hero clock, pine for the one
+ * action that matters and love for the destructive ones.
+ *
+ * Selectors follow ReGreet 0.5.0's widget tree (src/gui/templates.rs). That
+ * release sets NO widget names and no clock class -- the `#[name]` labels in
+ * the Rust template are relm4 bindings, not GTK names -- so everything is
+ * matched structurally:
+ *
+ *   overlay
+ *   ├─ picture                     wallpaper                      (child 1)
+ *   ├─ frame.background > grid     login card, centre             (child 2)
+ *   │    ├─ label                  greeting / status line         (first-child)
+ *   │    ├─ label …                "User:" / "Password:" eyebrows
+ *   │    ├─ combobox / entry       pickers and the password field
+ *   │    ├─ button.toggle          pencil toggles
+ *   │    └─ box > button           Cancel, Login (.suggested-action)
+ *   ├─ frame.background > label    clock, top centre              (child 3)
+ *   └─ box                         bottom                         (child 4)
+ *        ├─ frame > infobar        auth messages
+ *        └─ box > button.destructive-action   Reboot, Power Off
+ *
+ * The block between the markers is regenerated from the desktop wallpaper by
+ * /usr/local/bin/sync-greeter-wallpaper -- edit everything else freely.
+ */
+
+/* >>> matugen palette >>> */
+@define-color base    #0d141c;
+@define-color surface #1a2028;
+@define-color overlay #242a33;
+@define-color muted   #8b919b;
+@define-color subtle  #c1c7d2;
+@define-color text    #dde3ee;
+@define-color love    #d486b0;
+@define-color gold    #ddd090;
+@define-color rose    #c7c0e5;
+@define-color pine    #3a7786;
+@define-color foam    #a0a7d4;
+@define-color iris    #afc5df;
+/* <<< matugen palette <<< */
+
+/* Derived tones, mirroring the hyprlock variables. */
+@define-color shadow      #080f16;
+@define-color card_fill   alpha(@surface, 0.62);
+@define-color card_border alpha(@iris, 0.22);
+@define-color input_fill  alpha(@base, 0.78);
+@define-color input_ring  alpha(@iris, 0.35);
+@define-color hairline    alpha(@muted, 0.28);
+
+/* ── canvas ─────────────────────────────────────────────────────────── */
+
+window,
+window.background {
+    background-color: @base;      /* what shows until the picture is mapped */
+    color: @text;
+    font-family: "JetBrainsMono Nerd Font", "JetBrainsMono NF", monospace;
+    font-size: 14px;
+}
+
+/* Any frame is a glass card unless a rule below says otherwise. */
+frame.background {
+    background-color: @card_fill;
+    background-image: none;
+    border: 1px solid @card_border;
+    border-radius: 28px;
+    box-shadow: 0 24px 64px alpha(@shadow, 0.45),
+                inset 0 1px 0 alpha(@text, 0.05);
+}
+
+/* ── hero clock ─────────────────────────────────────────────────────── */
+
+overlay > frame:nth-child(3) {
+    background-color: transparent;
+    background-image: none;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    margin-top: 96px;
+}
+
+overlay > frame:nth-child(3) > label {
+    color: @text;
+    /* Pango will not pick the ExtraLight face from a bare font-weight here,
+       so ask for it by its fontconfig family name, then fall back. */
+    font-family: "JetBrainsMono NF ExtraLight", "JetBrainsMono Nerd Font ExtraLight", "JetBrainsMono Nerd Font";
+    font-size: 80px;
+    font-weight: 200;
+    letter-spacing: 3px;
+    text-shadow: 0 2px 28px alpha(@shadow, 0.65);
+}
+
+/* ── glass card ─────────────────────────────────────────────────────── */
+
+overlay > frame:nth-child(2) {
+    padding: 30px 34px 26px 34px;
+    min-width: 420px;
+}
+
+/* greeting / status line */
+frame.background > grid > label:first-child {
+    color: @text;
+    font-size: 19px;
+    font-weight: 300;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid @hairline;
+}
+
+/* "Password:" / "Session:" / "User:" eyebrow labels */
+frame.background > grid > label:not(:first-child) {
+    color: @muted;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    margin-right: 6px;
+}
+
+/* ── inputs ─────────────────────────────────────────────────────────── */
+
+entry,
+entry.password {
+    background-color: @input_fill;
+    background-image: none;
+    border: 1px solid alpha(@iris, 0.16);
+    border-radius: 14px;
+    box-shadow: none;
+    color: @text;
+    caret-color: @iris;
+    font-size: 15px;
+    min-height: 44px;
+    min-width: 280px;
+    padding: 0 16px;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+entry:focus-within,
+entry.password:focus-within {
+    border-color: @input_ring;
+    box-shadow: 0 0 0 3px alpha(@iris, 0.10);
+}
+
+entry > text > selection,
+entry selection {
+    background-color: alpha(@pine, 0.75);
+    color: @text;
+}
+
+entry image,
+entry.password image {
+    color: @muted;
+    -gtk-icon-size: 16px;
+}
+
+entry placeholder {
+    color: alpha(@muted, 0.7);
+}
+
+/* combo boxes (user / session pickers, after the pencil toggles) */
+combobox button.combo,
+dropdown > button {
+    background-color: @input_fill;
+    background-image: none;
+    border: 1px solid alpha(@iris, 0.16);
+    border-radius: 14px;
+    box-shadow: none;
+    color: @text;
+    font-size: 14px;
+    min-height: 44px;
+    min-width: 280px;
+    padding: 0 12px 0 16px;
+}
+
+combobox button.combo:hover,
+dropdown > button:hover {
+    border-color: @input_ring;
+}
+
+combobox arrow,
+dropdown arrow {
+    color: @muted;
+}
+
+popover > contents,
+popover.menu > contents {
+    background-color: alpha(@surface, 0.96);
+    border: 1px solid @card_border;
+    border-radius: 16px;
+    box-shadow: 0 16px 40px alpha(@shadow, 0.5);
+    padding: 6px;
+    color: @text;
+}
+
+popover > arrow {
+    background-color: alpha(@surface, 0.96);
+    border: 1px solid @card_border;
+}
+
+popover modelbutton,
+popover listview > row,
+popover list > row {
+    border-radius: 10px;
+    padding: 8px 12px;
+    color: @text;
+}
+
+popover modelbutton:hover,
+popover listview > row:hover,
+popover listview > row:selected,
+popover list > row:hover,
+popover list > row:selected {
+    background-color: alpha(@iris, 0.12);
+    color: @text;
+}
+
+/* ── buttons ────────────────────────────────────────────────────────── */
+
+button {
+    background-image: none;
+    box-shadow: none;
+    text-shadow: none;
+    border-radius: 14px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+
+/* pencil toggles next to the entries */
+button.toggle {
+    background-color: transparent;
+    border: 1px solid alpha(@muted, 0.22);
+    color: alpha(@muted, 0.9);
+    min-width: 42px;
+    min-height: 42px;
+    padding: 0;
+}
+
+button.toggle:hover {
+    background-color: alpha(@iris, 0.08);
+    border-color: alpha(@iris, 0.35);
+    color: @subtle;
+}
+
+button.toggle:checked {
+    background-color: alpha(@iris, 0.12);
+    border-color: alpha(@iris, 0.5);
+    color: @iris;
+}
+
+/* Login: the only filled button on the screen. */
+button.suggested-action {
+    background-color: @pine;
+    border: 1px solid alpha(@pine, 0.9);
+    color: @text;
+    min-height: 42px;
+    padding: 0 26px;
+    margin-top: 10px;
+    box-shadow: 0 10px 26px alpha(@pine, 0.28);
+}
+
+button.suggested-action:hover {
+    background-color: shade(@pine, 1.18);
+    border-color: shade(@pine, 1.18);
+}
+
+button.suggested-action:active {
+    background-color: shade(@pine, 0.88);
+}
+
+/* Cancel: the other button in the action row */
+frame.background > grid > box > button:not(.suggested-action) {
+    background-color: transparent;
+    border: 1px solid alpha(@muted, 0.28);
+    color: @subtle;
+    min-height: 42px;
+    padding: 0 20px;
+    margin-top: 10px;
+}
+
+frame.background > grid > box > button:not(.suggested-action):hover {
+    border-color: alpha(@love, 0.55);
+    color: @love;
+}
+
+/* Reboot / Power Off: quiet text at the foot of the screen. */
+button.destructive-action {
+    background-color: transparent;
+    border: 1px solid transparent;
+    color: alpha(@muted, 0.85);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    min-height: 34px;
+    padding: 0 18px;
+    margin: 0 6px;
+}
+
+button.destructive-action:hover {
+    background-color: alpha(@love, 0.08);
+    border-color: alpha(@love, 0.35);
+    color: @love;
+}
+
+/* the box holding the two power buttons sits a little off the bottom edge */
+overlay > box > box {
+    margin-bottom: 30px;
+}
+
+/* ── notifications (auth errors etc.) ───────────────────────────────── */
+
+overlay > box > frame {
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+    margin-bottom: 14px;
+}
+
+/* The InfoBar node is always in the tree, even while its revealer is
+   collapsed, so it must draw nothing itself; the visible pill is the box
+   inside the revealer. */
+infobar {
+    background-color: transparent;
+    background-image: none;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    margin: 0;
+}
+
+infobar > revealer > box {
+    background-color: alpha(@surface, 0.72);
+    background-image: none;
+    border: 1px solid alpha(@iris, 0.14);
+    border-radius: 14px;
+    color: @subtle;
+    padding: 4px 14px;
+}
+
+infobar.error   > revealer > box { border-color: alpha(@love, 0.55); }
+infobar.warning > revealer > box { border-color: alpha(@gold, 0.55); }
+/* Info messages ("Auto-selecting session ...") are chatter: no pill, muted
+ * text. Errors (wrong password) and warnings keep the outlined pill. */
+infobar.info    > revealer > box { border-color: transparent; background-color: transparent; }
+infobar.info label { color: alpha(@muted, 0.75); }
+
+infobar label {
+    color: @subtle;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+}
+
+infobar button {
+    background-color: transparent;
+    border: none;
+    color: @muted;
+    min-height: 28px;
+    min-width: 28px;
+    padding: 0;
+}
+
+/* ── misc ───────────────────────────────────────────────────────────── */
+
+label.dim-label { color: @muted; }
+
+/* GTK draws its own blue focus ring on top of ours; drop it. */
+*:focus,
+*:focus-visible,
+*:focus-within {
+    outline: none;
+    outline-width: 0;
+    outline-offset: 0;
+}
+
+scrollbar slider {
+    background-color: alpha(@muted, 0.4);
+    border-radius: 999px;
+    min-width: 6px;
+}

@@ -1,0 +1,35 @@
+# ReGreet -- /etc/greetd/regreet.toml
+# Installed by h3bzzz-dotfiles/system/greetd/install.sh. The look lives in
+# regreet.css; the background and palette there follow the desktop wallpaper
+# via /usr/local/bin/sync-greeter-wallpaper (run on every theme change).
+
+# Straight to the password prompt for the last user / session.
+skip_selection = true
+
+[background]
+# Stable path: the sync hook renders a blurred, darkened copy of the current
+# wallpaper here so the `greeter` user (no home access) can read it.
+path = "/usr/share/backgrounds/greetd/current-wallpaper"
+fit = "Cover"
+
+[appearance]
+greeting_msg = "welcome back."
+
+[widget.clock]
+# Time only. The clock is one GTK label, so a second line would be drawn at
+# the same 80px as the hour; the hero clock reads better alone.
+format = "%H:%M"
+resolution = "500ms"
+label_width = 320
+
+[GTK]
+application_prefer_dark_theme = true
+cursor_theme_name = "Adwaita"
+cursor_blink = false
+font_name = "JetBrainsMono Nerd Font 13"
+icon_theme_name = "Papirus-Dark"
+theme_name = "Adwaita"
+
+[commands]
+reboot = ["systemctl", "reboot"]
+poweroff = ["systemctl", "poweroff"]
