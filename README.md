@@ -216,7 +216,7 @@ blocks commits containing credential-shaped strings; `install.sh` enables it.
 | `SUPER + Z` | Resize mode |
 | `SUPER + H/J/K/L` or arrows | Focus direction |
 | `SUPER + M` / `SUPER + SHIFT + M` | Toggle / move to scratchpad |
-| `SUPER + grave` | **Drop-down terminal** — dedicated ghostty on a special workspace |
+| `SUPER + grave` | **Drop-down terminal** — ghostty's native quick terminal |
 | `y` (shell) | yazi file manager; quitting leaves the shell in that directory |
 | `SUPER + N` | Notification panel |
 | `SUPER + SHIFT + V` | Clipboard history |
@@ -273,11 +273,11 @@ template. Edit the template, never the generated `config.json`.
 
 | Key | Action |
 | --- | --- |
-| `SUPER + grave` | Drop-down terminal (Hyprland special workspace) |
+| `SUPER + grave` | Drop-down terminal (ghostty quick terminal) |
 | `CTRL + SHIFT + ENTER` / `-` | Split right / down |
 | `CTRL + SHIFT + H/J/K/L` | Focus split |
 | `CTRL + SHIFT + Z` | Zoom split |
-| `CTRL + SHIFT + F` | Search scrollback |
+| `CTRL + SHIFT + F` | Search scrollback (`F3` / `SHIFT + F3` next / previous match) |
 | `CTRL + SHIFT + PageUp/Dn` | Jump to previous / next prompt |
 | `CTRL + SHIFT + O` | Write scrollback to a file and open it |
 | `CTRL + SHIFT + P` | Command palette |
@@ -286,13 +286,16 @@ A command that runs longer than 30s in an unfocused surface raises a swaync
 notification (`notify-on-command-finish`), which is aimed at long `nuclei`,
 `subfinder` and `zig build` runs.
 
-Ghostty's own quick terminal is deliberately unused: toggling it from outside
-the app needs `keybind = global:`, which is macOS-only — on Linux the prefix is
-silently dropped and the bind only fires when ghostty already has focus. The
-drop-down is a Hyprland special workspace holding a second ghostty instance
-with its own app-id instead. `size` and `move` window rules are also absent
-from that rule on purpose: Hyprland ignores both for special-workspace windows,
-so the geometry is passed on the ghostty command line in `autostart.lua`.
+The drop-down is ghostty's own quick terminal: a layer surface that drops from
+the top of whichever monitor the pointer is on, living in the main ghostty
+process. `SUPER + grave` is a Hyprland bind that runs
+`ghostty +toggle-quick-terminal`, which goes over D-Bus and so works with no
+ghostty window open. Size and position are the `quick-terminal-*` keys in
+`config/ghostty/config`.
+
+`ssh` is wrapped by ghostty's shell integration (`ssh-env`) so remote hosts see
+`TERM=xterm-256color`. Nothing is installed remotely; for a host you own,
+`ghostty +ssh --terminfo user@host` installs the terminfo entry once.
 
 ---
 

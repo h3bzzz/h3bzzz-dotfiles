@@ -27,7 +27,8 @@ vec3 brightPass(vec3 c) {
 
 void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     vec2 uv  = fragCoord / iResolution.xy;
-    vec3 src = texture(iChannel0, uv).rgb;
+    vec4 srcA = texture(iChannel0, uv);
+    vec3 src  = srcA.rgb;
 
     // 9-tap separable-ish blur of the bright areas only. Cheap, and at this
     // radius the difference from a proper two-pass gaussian is not visible.
@@ -50,5 +51,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     float v = 1.0 - dot(d, d) * VIGNETTE_STRENGTH * 4.0;
     col *= clamp(v, 0.0, 1.0);
 
-    fragColor = vec4(col, 1.0);
+    // Pass the terminal's own alpha through. Writing 1.0 here would make the
+    // window opaque and cancel `background-opacity`.
+    fragColor = vec4(col, srcA.a);
 }

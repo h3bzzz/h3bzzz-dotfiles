@@ -6,21 +6,21 @@
 #  process to re-read this file. Do not add `background`, `foreground` or
 #  `palette` lines below -- they would override the generated theme.
 #
-#  Deliberately unused: `palette-generate` and `palette-harmonious`. Ghostty can
-#  synthesise its own palette from a seed colour, which is exactly matugen's job
-#  here; enabling them would put two generators in charge of the same 16 slots.
+#  `palette-generate` is left off. It would NOT fight matugen -- it only derives
+#  the extended colours 16-255 from the 16 set in the theme and never overwrites
+#  an explicit `palette` line -- so turning it on makes 256-colour programs
+#  follow the wallpaper too. It stays off because some older tools hardcode the
+#  stock xterm colour cube and look wrong once it moves.
 # =============================================================================
 
 # ---- font --------------------------------------------------------------------
 font-family = JetBrainsMono Nerd Font
 font-size = 12
-font-thicken = true
 
-# JetBrains Mono ships programming ligatures (-> => != <= ===) behind `calt`.
-# `liga` covers the standard set. Drop these two lines if you would rather see
-# the raw characters.
-font-feature = calt
-font-feature = liga
+# JetBrains Mono's programming ligatures (-> => != <= ===) are on by default
+# (`calt` and `liga`). Add `font-feature = -calt` and `font-feature = -liga`
+# if you would rather see the raw characters.
+# `font-thicken` is not set: it only does anything on macOS.
 
 # A little air between lines; easier on long log and nuclei output.
 adjust-cell-height = 8%
@@ -47,27 +47,40 @@ window-width = 120
 window-decoration = none
 
 background-opacity = 0.90
-# Ghostty's own blur, independent of Hyprland's layer blur. Keep modest -- the
-# compositor is already blurring what is behind the window.
-background-blur = 20
+# Asks the compositor to blur what is behind the window (and behind the quick
+# terminal, which is a layer surface Hyprland would not blur on its own). On
+# Linux this is on/off only; a blur intensity number is ignored.
+background-blur = true
 
 # Dim the split that does not have focus so the active one reads at a glance.
 unfocused-split-opacity = 0.80
+# A zoomed split stays zoomed while moving between panes with ctrl+shift+hjkl;
+# the zoom follows focus instead of dropping back to the full layout.
+split-preserve-zoom = navigation
 
 # ---- cursor ------------------------------------------------------------------
 cursor-style = bar
 cursor-style-blink = true
 
 # ---- scrollback --------------------------------------------------------------
-# Default is 10MB. Recon output (subfinder, httpx, nuclei) blows through that,
-# and the whole point of scrollback search below is being able to go find it.
-scrollback-limit = 104857600
+# Default is 50MB per surface. Recon output (subfinder, httpx, nuclei) can blow
+# through that, and the whole point of scrollback search below is being able to
+# go find it. Memory is allocated lazily and idle history is compressed
+# (`scrollback-compression`, on by default), so the ceiling is cheap.
+scrollback-limit-bytes = 104857600
 
 # ---- shell integration -------------------------------------------------------
-# `cursor` and `sudo` were already on. `title` keeps the tab label following the
-# running command, and marking prompts is what makes jump_to_prompt work.
+# `title` keeps the tab label following the running command, and marking
+# prompts is what makes jump_to_prompt work.
+#
+# `ssh-env` wraps `ssh` so remote hosts get TERM=xterm-256color instead of
+# xterm-ghostty, which they do not know ("unknown terminal type"). Nothing is
+# written to the remote side. `ssh-terminfo` is deliberately NOT enabled: it
+# installs a terminfo entry into the remote home directory on first connect,
+# which is not something to leave behind on a box under test. For your own
+# hosts, run `ghostty +ssh --terminfo user@host` once to get full features.
 shell-integration = zsh
-shell-integration-features = cursor,sudo,title
+shell-integration-features = cursor,sudo,title,ssh-env
 # The login shell is /bin/bash, but this rice lives entirely in ~/.zshrc
 # (oh-my-posh prompt, aliases, plugins). Always spawn zsh instead of whatever
 # /etc/passwd says, so every ghostty tab/split gets the configured prompt.
@@ -80,10 +93,23 @@ command = /usr/bin/zsh
 # `nuclei`, `subfinder` and `zig build` runs you walk away from.
 notify-on-command-finish = unfocused
 notify-on-command-finish-after = 30s
+# The action defaults to bell only; `notify` is what actually sends the
+# desktop notification.
+notify-on-command-finish-action = bell,notify
 desktop-notifications = true
 
+# On a bell, outline the split that rang (on top of the default attention
+# request and bell mark in the title) so it is obvious which pane finished.
+bell-features = border
+
 # ---- mouse / clipboard -------------------------------------------------------
-copy-on-select = clipboard
+# Selecting text fills both the primary selection (middle-click paste) and the
+# system clipboard.
+copy-on-select = both
+# Right-click copies when there is a selection, pastes when there is not.
+right-click-action = copy-or-paste
+# No toast on every copy; the config-reload toast stays.
+app-notifications = no-clipboard-copy
 mouse-hide-while-typing = true
 link-previews = true
 clipboard-paste-protection = true
@@ -133,6 +159,10 @@ keybind = alt+five=goto_tab:5
 # ---- scrollback search (ghostty 1.3+) ----
 keybind = ctrl+shift+f=start_search
 keybind = ctrl+shift+g=search_selection
+# Next / previous match. `performable:` hands F3 back to the running program
+# whenever no search is active.
+keybind = performable:f3=navigate_search:next
+keybind = performable:shift+f3=navigate_search:previous
 
 # ---- prompt jumping ----
 # Only works because shell-integration marks each prompt. Walks backwards and
@@ -142,7 +172,9 @@ keybind = ctrl+shift+page_up=jump_to_prompt:-1
 keybind = ctrl+shift+page_down=jump_to_prompt:1
 
 # ---- scrollback to a file ----
-# Opens the whole buffer in $EDITOR. Handy for keeping a scan's output.
+# Writes the whole buffer to a temp file and opens it with xdg-open, i.e. in
+# whatever handles text/plain (not $EDITOR). Handy for keeping a scan's output.
+# Use `write_scrollback_file:paste` instead to get the path typed at the prompt.
 keybind = ctrl+shift+o=write_scrollback_file:open
 
 # ---- misc ----
@@ -152,17 +184,22 @@ keybind = ctrl+shift+i=inspector:toggle
 keybind = f11=toggle_fullscreen
 
 # =============================================================================
-#  DROP-DOWN TERMINAL
+#  QUICK TERMINAL (drop-down)
 # =============================================================================
-# Ghostty's own quick terminal is NOT used here. Toggling it from outside the
-# app needs `keybind = global:...`, and global keybinds are macOS-only -- on
-# Linux ghostty parses the line but silently drops the `global:` prefix, so the
-# bind only fires when a ghostty surface already has focus. That is backwards
-# for a drop-down.
+# Ghostty's own quick terminal: a layer-shell surface that drops from the top
+# of whichever monitor the pointer is on. It lives in the main ghostty process,
+# so there is no second instance to autostart.
 #
-# The drop-down is a Hyprland special workspace instead: a dedicated ghostty
-# instance launched with its own app-id, matched by a window rule, toggled with
-# SUPER+grave. See config/hypr/lua/{autostart,rules,binds}.lua.
+# The toggle is SUPER+grave, bound in config/hypr/lua/binds.lua to
+# `ghostty +toggle-quick-terminal`. That goes over D-Bus, so it also starts
+# ghostty when nothing is running. (A `keybind = global:...` line here would
+# work too on Hyprland >= 0.56, but only while a ghostty process is alive.)
+quick-terminal-position = top
+quick-terminal-screen = mouse
+# height,width
+quick-terminal-size = 40%,92%
+# Stay open when focus moves away; SUPER+grave is the only thing that hides it.
+quick-terminal-autohide = false
 
 # ---- shader ------------------------------------------------------------------
 # Subtle bloom + vignette. custom-shader-animation=false means it only redraws
