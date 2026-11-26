@@ -191,6 +191,12 @@ A fresh clone therefore has no `colors.css` until `install.sh` (or
 `apply-theme.sh`) has run once — waybar `@import`s it and will not start
 without it.
 
+### Per-machine overrides
+
+`config/hypr/lua/local.lua` is gitignored and loaded last if it exists. Put
+anything that belongs to one machine there — its monitor layout, a different
+terminal, extra binds — instead of editing the tracked files.
+
 ### Secrets
 
 `~/.config/zsh/secrets.zsh` is gitignored and sourced by `.zshrc`. Machine-local
@@ -211,6 +217,7 @@ into `~/.local/bin` by the installer) is for every day after that.
 | `rice doctor` | Read-only health check: required commands, optional features, session services, config errors, theme outputs, pending migrations. |
 | `rice backup [DIR]` | One passphrase-encrypted archive (gpg, AES256) of `~/.ssh`, `~/.gnupg`, `secrets.zsh`, `.gitconfig` and the installed-package lists. Written to `~/rice-backups` by default — **not** into this public repo. Extra paths go in `~/.config/rice/backup-paths`. |
 | `rice restore FILE` | Lists the archive, asks, unpacks into `$HOME` and fixes key permissions. |
+| `rice webapp add NAME URL` | Turns a site into a launcher entry that opens in its own chromeless window (Chromium-family browser). `remove NAME`, `list`. |
 
 Bare box to "my machine again": `./install.sh --deps --link`, then
 `rice restore /path/to/rice-backup-….tar.gz.gpg`.

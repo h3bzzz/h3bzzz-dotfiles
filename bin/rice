@@ -9,6 +9,8 @@
 #   rice doctor                 read-only health check of the whole setup
 #   rice backup [DIR]           encrypted archive of keys, secrets, package lists
 #   rice restore FILE           unpack such an archive into $HOME
+#   rice webapp add NAME URL    turn a site into a launcher entry (own window)
+#   rice webapp remove NAME | rice webapp list
 #   rice help
 #
 # State (migration markers, logs) lives in ~/.local/state/rice.
@@ -293,6 +295,65 @@ cmd_restore() {
     ok "package lists: $target/.local/state/rice/pkgs-{repo,aur}.txt"
 }
 
+# ── webapp ───────────────────────────────────────────────────────────────
+# A site as an app: a .desktop entry that opens the URL in a chromeless
+# browser window with its own app-id, so it shows up in the launcher and the
+# dock and can have its own window rules. Needs a Chromium-family browser --
+# Firefox and Zen have no app mode.
+
+webapp_browser() {
+    local b
+    for b in google-chrome-stable chromium brave vivaldi-stable microsoft-edge-stable; do
+        if have "$b"; then
+            printf '%s\n' "$b"
+            return 0
+        fi
+    done
+    return 1
+}
+
+cmd_webapp() {
+    local apps="${XDG_DATA_HOME:-$HOME/.local/share}/applications"
+    local sub="${1:-list}" name="${2:-}" url="${3:-}" slug file browser
+    slug="$(printf '%s' "$name" | tr '[:upper:]' '[:lower:]' | tr -cs 'a-z0-9' '-' | sed 's/^-//; s/-$//')"
+    file="$apps/webapp-$slug.desktop"
+    case "$sub" in
+        add)
+            [ -n "$slug" ] && [ -n "$url" ] || die "usage: rice webapp add NAME URL"
+            case "$url" in http://* | https://*) ;; *) die "URL must start with http:// or https://" ;; esac
+            browser="$(webapp_browser)" || die "no Chromium-family browser found (chrome, chromium, brave)"
+            mkdir -p "$apps"
+            cat >"$file" <<DESKTOP
+[Desktop Entry]
+Type=Application
+Name=$name
+Comment=$url
+Exec=$browser --app=$url --class=webapp-$slug
+Icon=${RICE_WEBAPP_ICON:-applications-internet}
+Categories=Network;
+StartupWMClass=webapp-$slug
+DESKTOP
+            have update-desktop-database && update-desktop-database "$apps" >/dev/null 2>&1
+            ok "$name -> $file ($browser)"
+            ;;
+        remove)
+            [ -f "$file" ] || die "no web app named '$name'"
+            rm -f "$file"
+            ok "removed $name"
+            ;;
+        list)
+            local f found=0
+            for f in "$apps"/webapp-*.desktop; do
+                [ -e "$f" ] || continue
+                found=1
+                printf '    %-20s %s\n' "$(sed -n 's/^Name=//p' "$f")" "$(sed -n 's/^Comment=//p' "$f")"
+            done
+            [ "$found" -eq 1 ] || ok "no web apps yet -- rice webapp add NAME URL"
+            ;;
+        *) die "usage: rice webapp add NAME URL | remove NAME | list" ;;
+    esac
+}
+
 # ── dispatch ─────────────────────────────────────────────────────────────
 
 case "${1:-help}" in
@@ -304,6 +365,7 @@ case "${1:-help}" in
     doctor) cmd_doctor ;;
     backup) shift; cmd_backup "$@" ;;
     restore) shift; cmd_restore "$@" ;;
-    help | -h | --help) sed -n '3,15p' "$SELF" | sed 's/^# \{0,1\}//' ;;
+    webapp) shift; cmd_webapp "$@" ;;
+    help | -h | --help) sed -n '3,17p' "$SELF" | sed 's/^# \{0,1\}//' ;;
     *) die "unknown command: $1 (try: rice help)" ;;
 esac
