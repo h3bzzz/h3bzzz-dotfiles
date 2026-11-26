@@ -13,4 +13,5 @@ ShellRoot {
     PowerMenu {}
     AppLauncher {}
     WallpaperWheel {}
+    ControlCenter {}
 }
