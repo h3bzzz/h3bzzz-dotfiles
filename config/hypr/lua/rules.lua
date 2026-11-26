@@ -188,6 +188,28 @@ hl.window_rule({
 })
 
 -- ============================================================
+-- Privacy: never leak secrets into a screen share or recording
+--
+-- no_screen_share paints these windows black in anything that captures the
+-- screen through the portal (a call, OBS, a shared workspace). They stay
+-- visible on the real display. Password managers, the polkit password
+-- prompt and keyring dialogs are the obvious cases; add a class here for
+-- anything else that should never be seen by a client or an audience.
+-- ============================================================
+
+hl.window_rule({
+    name  = "private-password-managers",
+    match = { class = "^(org\\.keepassxc\\.KeePassXC|[Bb]itwarden|1[Pp]assword|com\\.onepassword\\.OnePassword|Proton Pass|org\\.gnome\\.seahorse\\.Application)$" },
+    no_screen_share = true,
+})
+
+hl.window_rule({
+    name  = "private-auth-prompts",
+    match = { class = "^(hyprpolkitagent|org\\.hyprland\\.hyprpolkitagent|gcr-prompter|pinentry.*)$" },
+    no_screen_share = true,
+})
+
+-- ============================================================
 -- Stage 3: apply opacity to everything that did not opt out.
 -- MUST stay last in this file -- see "Opacity tagging" above.
 -- ============================================================

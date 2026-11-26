@@ -1,0 +1,6 @@
+{
+  "runtime.version": "LuaJIT",
+  "workspace.library": ["/usr/share/hypr/stubs"],
+  "workspace.checkThirdParty": false,
+  "diagnostics.globals": ["hl", "Rice"]
+}
