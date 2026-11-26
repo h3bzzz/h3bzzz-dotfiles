@@ -43,6 +43,14 @@ hl.on("hyprland.start", function()
     -- activation environment itself, and starts hyprland-session.target.
     -- The wiki asks for leftover manual calls to be removed.
 
+    -- Polkit agent: the password prompt for privileged GUI actions (mounting
+    -- a drive in thunar, editing a connection, pkexec). Without it those
+    -- actions fail silently.
+    hl.exec_cmd("systemctl --user start hyprpolkitagent.service")
+
+    -- Night light. hyprsunset.conf carries the day / evening schedule.
+    hl.exec_cmd("command -v hyprsunset >/dev/null 2>&1 && hyprsunset")
+
     -- Status bar (waybar — Rose Pine themed in ~/.config/waybar)
     hl.exec_cmd("waybar")
 
